@@ -211,7 +211,7 @@
                 else if(status.includes("ยกเลิก") || status.includes("ไม่มาตามนัด") || status.includes("นอกเขตพื้นที่")) { badgeClass = "bg-danger"; trClass = "row-cancelled"; }
                 else if(status === "รอดำเนินการ") { badgeClass = "bg-warning text-dark"; }
                 html += '<tr class="' + trClass + '">';
-                html += '<td class="text-center fw-bold text-muted">' + rowNumber + '</td>';
+                html += '<td class="text-center fw-bold text-muted">' + (i + 1) + '</td>';
                 html += '<td><span class="badge ' + badgeClass + '">' + status + '</span></td>';
                 html += '<td class="text-danger fw-bold">' + date + '</td>';
                 html += '<td>' + name + '</td>';

@@ -103,7 +103,24 @@
 
         <div class="container-fluid">
             <div class="row">
-                <nav class="col-md-3 col-lg-2 sidebar" id="sidebar-menu">
+                <nav class="col-md-3 col-lg-2 sidebar d-none" id="sidebar-menu">
+                    <div id="sidebar-food-project" class="d-none">
+                        <div class="sidebar-heading">เมนูหลัก</div>
+                        <a class="nav-link sidebar-menu-btn active" href="javascript:void(0);" onclick="switchFoodTab('food-info', this)">
+                            <i class="fas fa-file-alt text-secondary"></i> ประเภทใบอนุญาต
+                        </a>
+                        <a class="nav-link sidebar-menu-btn" href="javascript:void(0);" onclick="switchFoodTab('food-steps', this)">
+                            <i class="fas fa-list-ol text-secondary"></i> ขั้นตอนการขอ
+                        </a>
+                        <a class="nav-link sidebar-menu-btn" href="javascript:void(0);" onclick="switchFoodTab('food-search', this)">
+                            <i class="fas fa-search text-secondary"></i> ค้นหาสถานะคำขอ
+                        </a>
+                        <div class="sidebar-divider"></div>
+                        <div class="sidebar-heading">ติดต่อ</div>
+                        <a class="nav-link sidebar-menu-btn" href="javascript:void(0);" onclick="switchFoodTab('food-contact', this)">
+                            <i class="fas fa-phone-alt text-secondary"></i> ติดต่อเจ้าหน้าที่
+                        </a>
+                    </div>
                     <div id="sidebar-pet-project" class="d-none">
                         <div class="sidebar-heading">สถานะการนัดหมายคิว</div>
                         <a class="nav-link sidebar-filter-btn active" href="javascript:void(0);" onclick="filterByStatus('ทั้งหมด', this, 'search')">
@@ -146,7 +163,7 @@
                     </div>
                 </nav>
 
-                <main class="col-md-9 col-lg-10 main-content">
+                <main class="col-12 main-content">
                     <div id="project-home" class="animation-fade-in">
                         <div class="content-card mb-5 p-0 shadow-sm" style="border-radius: 15px; overflow: hidden; border: 1px solid #e2e8f0;">
                             <div id="homeCarousel" class="carousel slide" data-bs-ride="carousel">
@@ -345,12 +362,133 @@
                         </div>
                     </div>
 
-                    <div id="project-food" class="d-none">
-                        <div class="content-card text-center py-5 mt-5">
-                            <i class="fas fa-tools fa-4x text-muted mb-3"></i>
-                            <h3 style="color: #0f2c59; font-weight: 700;">ระบบใบอนุญาตสะสมอาหาร</h3>
-                            <p class="text-secondary fs-5">กำลังอยู่ในช่วงพัฒนาระบบและเชื่อมต่อฐานข้อมูล<br>ขออภัยในความไม่สะดวกครับ</p>
+                    <div id="project-food" class="d-none animation-fade-in">
+
+                        <!-- Tab: ประเภทใบอนุญาต -->
+                        <div id="tab-food-info">
+                            <h4 style="color:#0f2c59; font-weight:700; margin-bottom:20px;"><i class="fas fa-file-alt"></i> ประเภทใบอนุญาต หมวดสาธารณสุขและสิ่งแวดล้อม</h4>
+                            <p class="text-muted mb-4">ครอบคลุมธุรกิจที่อาจส่งผลกระทบต่อสุขภาพ อนามัย หรือสิ่งแวดล้อมของชุมชน</p>
+
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <div class="content-card p-4" style="border-left: 5px solid #0f2c59; border-radius:12px;">
+                                        <h6 style="color:#0f2c59; font-weight:700;"><i class="fas fa-exclamation-triangle text-warning me-2"></i>ใบอนุญาตประกอบกิจการที่เป็นอันตรายต่อสุขภาพ</h6>
+                                        <p class="text-muted mb-0" style="font-size:0.95rem;">สำหรับธุรกิจที่อาจก่อให้เกิดเหตุรำคาญ มลพิษ หรืออันตราย เช่น อู่ซ่อมรถ คาร์แคร์ โรงปิ้ง ร้านเชื่อมโลหะ ฟาร์มเลี้ยงสัตว์ หรือโรงงานต่างๆ</p>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="content-card p-4" style="border-left: 5px solid #0369a1; border-radius:12px;">
+                                        <h6 style="color:#0369a1; font-weight:700;"><i class="fas fa-utensils text-primary me-2"></i>ใบอนุญาตจัดตั้งสถานที่จำหน่ายอาหาร / สถานที่สะสมอาหาร</h6>
+                                        <p class="text-muted mb-0" style="font-size:0.95rem;">สำหรับร้านอาหาร ร้านเครื่องดื่ม ซูเปอร์มาร์เก็ต หรือโกดังเก็บอาหาร <span class="text-danger fw-bold">(หากพื้นที่ไม่เกิน 200 ตร.ม. จะใช้เป็น "หนังสือรับรองการแจ้ง" แทนใบอนุญาต)</span></p>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="content-card p-4" style="border-left: 5px solid #059669; border-radius:12px;">
+                                        <h6 style="color:#059669; font-weight:700;"><i class="fas fa-store text-success me-2"></i>ใบอนุญาตจำหน่ายสินค้าในที่หรือทางสาธารณะ</h6>
+                                        <p class="text-muted mb-0" style="font-size:0.95rem;">สำหรับพ่อค้าแม่ค้าหาบเร่ หรือแผงลอยที่ตั้งขายในพื้นที่สาธารณะ</p>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="content-card p-4" style="border-left: 5px solid #d97706; border-radius:12px;">
+                                        <h6 style="color:#d97706; font-weight:700;"><i class="fas fa-shopping-basket text-warning me-2"></i>ใบอนุญาตประกอบกิจการตลาด</h6>
+                                        <p class="text-muted mb-0" style="font-size:0.95rem;">สำหรับผู้ที่ต้องการเปิดตลาดสดหรือตลาดนัด</p>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="content-card p-4" style="border-left: 5px solid #dc2626; border-radius:12px;">
+                                        <h6 style="color:#dc2626; font-weight:700;"><i class="fas fa-trash-alt text-danger me-2"></i>ใบอนุญาตประกอบกิจการรับทำการเก็บ ขน หรือกำจัดสิ่งปฏิกูลและมูลฝอย</h6>
+                                        <p class="text-muted mb-0" style="font-size:0.95rem;">สำหรับเอกชนที่รับเหมาจัดการขยะหรือดูดส้วม</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
+                        <!-- Tab: ขั้นตอนการขอ -->
+                        <div id="tab-food-steps" class="d-none">
+                            <h4 style="color:#0f2c59; font-weight:700; margin-bottom:20px;"><i class="fas fa-list-ol"></i> ขั้นตอนการขอใบอนุญาต</h4>
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6 col-lg-4">
+                                    <div class="content-card p-4 text-center h-100" style="border-radius:12px;">
+                                        <div style="width:50px; height:50px; border-radius:50%; background:#0f2c59; color:white; display:flex; align-items:center; justify-content:center; font-size:1.4rem; font-weight:700; margin:0 auto 12px;">1</div>
+                                        <h6 style="font-weight:700; color:#0f2c59;">ติดต่อขอรับแบบฟอร์ม</h6>
+                                        <p class="text-muted mb-0" style="font-size:0.9rem;">ติดต่อขอรับแบบคำขอได้ที่ กองสาธารณสุขฯ หรือดาวน์โหลดจากเว็บไซต์เทศบาล</p>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6 col-lg-4">
+                                    <div class="content-card p-4 text-center h-100" style="border-radius:12px;">
+                                        <div style="width:50px; height:50px; border-radius:50%; background:#0369a1; color:white; display:flex; align-items:center; justify-content:center; font-size:1.4rem; font-weight:700; margin:0 auto 12px;">2</div>
+                                        <h6 style="font-weight:700; color:#0369a1;">เตรียมเอกสาร</h6>
+                                        <p class="text-muted mb-0" style="font-size:0.9rem;">สำเนาบัตรประชาชน, สำเนาทะเบียนบ้าน, รูปถ่ายสถานที่, แผนผังสถานประกอบการ และเอกสารอื่นๆ ตามประเภทใบอนุญาต</p>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6 col-lg-4">
+                                    <div class="content-card p-4 text-center h-100" style="border-radius:12px;">
+                                        <div style="width:50px; height:50px; border-radius:50%; background:#059669; color:white; display:flex; align-items:center; justify-content:center; font-size:1.4rem; font-weight:700; margin:0 auto 12px;">3</div>
+                                        <h6 style="font-weight:700; color:#059669;">ยื่นคำขอ</h6>
+                                        <p class="text-muted mb-0" style="font-size:0.9rem;">นำแบบฟอร์มพร้อมเอกสารยื่นที่กองสาธารณสุขและสิ่งแวดล้อม เทศบาลเมืองจันทนิมิต</p>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6 col-lg-4">
+                                    <div class="content-card p-4 text-center h-100" style="border-radius:12px;">
+                                        <div style="width:50px; height:50px; border-radius:50%; background:#d97706; color:white; display:flex; align-items:center; justify-content:center; font-size:1.4rem; font-weight:700; margin:0 auto 12px;">4</div>
+                                        <h6 style="font-weight:700; color:#d97706;">เจ้าหน้าที่ตรวจสอบ</h6>
+                                        <p class="text-muted mb-0" style="font-size:0.9rem;">เจ้าหน้าที่ตรวจสอบเอกสารและลงพื้นที่ตรวจสถานประกอบการ (ใช้เวลาประมาณ 7-15 วันทำการ)</p>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6 col-lg-4">
+                                    <div class="content-card p-4 text-center h-100" style="border-radius:12px;">
+                                        <div style="width:50px; height:50px; border-radius:50%; background:#7c3aed; color:white; display:flex; align-items:center; justify-content:center; font-size:1.4rem; font-weight:700; margin:0 auto 12px;">5</div>
+                                        <h6 style="font-weight:700; color:#7c3aed;">ชำระค่าธรรมเนียม</h6>
+                                        <p class="text-muted mb-0" style="font-size:0.9rem;">ชำระค่าธรรมเนียมตามประเภทใบอนุญาตที่กำหนด ณ งานการเงินเทศบาล</p>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6 col-lg-4">
+                                    <div class="content-card p-4 text-center h-100" style="border-radius:12px;">
+                                        <div style="width:50px; height:50px; border-radius:50%; background:#0f2c59; color:white; display:flex; align-items:center; justify-content:center; font-size:1.4rem; font-weight:700; margin:0 auto 12px;">6</div>
+                                        <h6 style="font-weight:700; color:#0f2c59;">รับใบอนุญาต</h6>
+                                        <p class="text-muted mb-0" style="font-size:0.9rem;">รับใบอนุญาตได้ที่กองสาธารณสุขฯ ใบอนุญาตมีอายุ 1 ปี ต้องต่ออายุทุกปีก่อนวันที่ 1 มีนาคม</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="content-card p-3 mt-3" style="background:#fffbeb; border:1px solid #fcd34d; border-radius:10px;">
+                                <p class="mb-0" style="font-size:0.9rem; color:#b45309;"><i class="fas fa-exclamation-triangle me-2"></i><b>หมายเหตุ:</b> ใบอนุญาตมีอายุ 1 ปี นับจากวันที่ออก ต้องต่ออายุก่อนหมดอายุ หากประกอบกิจการโดยไม่มีใบอนุญาตมีโทษตามกฎหมาย</p>
+                            </div>
+                        </div>
+
+                        <!-- Tab: ค้นหาสถานะ -->
+                        <div id="tab-food-search" class="d-none">
+                            <h4 style="color:#0f2c59; font-weight:700; margin-bottom:20px;"><i class="fas fa-search"></i> ค้นหาสถานะคำขอใบอนุญาต</h4>
+                            <div class="content-card p-4" style="border-radius:12px; text-align:center; padding:60px 20px !important;">
+                                <i class="fas fa-tools fa-3x text-muted mb-3"></i>
+                                <h5 style="color:#64748b; font-weight:600;">กำลังพัฒนาระบบค้นหา</h5>
+                                <p class="text-muted mb-0">ระบบค้นหาสถานะคำขอออนไลน์อยู่ในระหว่างพัฒนา<br>สามารถสอบถามสถานะได้ที่กองสาธารณสุขฯ โทร. 039-311-073 ต่อ 306</p>
+                            </div>
+                        </div>
+
+                        <!-- Tab: ติดต่อเจ้าหน้าที่ -->
+                        <div id="tab-food-contact" class="d-none">
+                            <h4 style="color:#0f2c59; font-weight:700; margin-bottom:20px;"><i class="fas fa-phone-alt"></i> ติดต่อเจ้าหน้าที่</h4>
+                            <div class="row g-3">
+                                <div class="col-12 col-md-6">
+                                    <div class="content-card p-4" style="border-radius:12px;">
+                                        <h6 style="font-weight:700; color:#0f2c59;"><i class="fas fa-building me-2"></i>กองสาธารณสุขและสิ่งแวดล้อม</h6>
+                                        <p class="text-muted mb-1" style="font-size:0.95rem;"><i class="fas fa-map-marker-alt me-2 text-danger"></i>999 ถนนจันทนิมิต 2 ต.จันทนิมิต อ.เมือง จ.จันทบุรี 22000</p>
+                                        <p class="text-muted mb-1" style="font-size:0.95rem;"><i class="fas fa-phone me-2 text-success"></i>039-311-073 ต่อ 306</p>
+                                        <p class="text-muted mb-0" style="font-size:0.95rem;"><i class="fas fa-clock me-2 text-primary"></i>วันจันทร์ – วันศุกร์ เวลา 08:30 – 16:30 น.</p>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <div class="content-card p-4" style="border-radius:12px;">
+                                        <h6 style="font-weight:700; color:#0f2c59;"><i class="fas fa-share-alt me-2"></i>ช่องทางออนไลน์</h6>
+                                        <a href="https://www.facebook.com/profile.php?id=100068959037043" target="_blank" class="btn btn-outline-primary w-100 mb-2" style="border-radius:8px;">
+                                            <i class="fab fa-facebook-f me-2"></i>Facebook Page
+                                        </a>
+                
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </main>
             </div>
@@ -413,14 +551,34 @@
               document.getElementById('project-pet').classList.add('d-none');
               document.getElementById('project-food').classList.add('d-none');
               document.getElementById('sidebar-pet-project').classList.add('d-none');
+              document.getElementById('sidebar-food-project').classList.add('d-none');
+              var sidebarEl = document.getElementById('sidebar-menu');
+              var mainEl = document.querySelector('.main-content');
               if (projectName === 'home') {
                   document.getElementById('project-home').classList.remove('d-none');
+                  sidebarEl.classList.add('d-none');
+                  mainEl.className = 'col-12 main-content';
               } else if (projectName === 'pet') {
                   document.getElementById('project-pet').classList.remove('d-none');
                   document.getElementById('sidebar-pet-project').classList.remove('d-none');
+                  sidebarEl.classList.remove('d-none');
+                  mainEl.className = 'col-md-9 col-lg-10 main-content';
               } else if (projectName === 'food') {
                   document.getElementById('project-food').classList.remove('d-none');
+                  document.getElementById('sidebar-food-project').classList.remove('d-none');
+                  sidebarEl.classList.remove('d-none');
+                  mainEl.className = 'col-md-9 col-lg-10 main-content';
               }
+          }
+
+          function switchFoodTab(tabName, btnElement) {
+              ['food-info','food-steps','food-search','food-contact'].forEach(function(t) {
+                  document.getElementById('tab-' + t).classList.add('d-none');
+              });
+              var allBtns = document.querySelectorAll('#sidebar-food-project .nav-link');
+              allBtns.forEach(btn => btn.classList.remove('active'));
+              document.getElementById('tab-' + tabName).classList.remove('d-none');
+              if(btnElement) btnElement.classList.add('active');
           }
 
           function switchTab(tabName, btnElement) {
@@ -694,5 +852,25 @@
               document.getElementById('album-photos-view').classList.add('d-none');
           }
         </script>
+
+    <footer style="background:#0f2c59; color:rgba(255,255,255,0.85); padding:28px 32px 18px; font-family:'Sarabun',sans-serif; text-align:center;">
+      <p style="font-size:15px; font-weight:600; color:#fff; margin:0 0 7px;">กองสาธารณสุขและสิ่งแวดล้อม เทศบาลเมืองจันทนิมิต</p>
+      <p style="font-size:13px; color:rgba(255,255,255,0.7); margin:0 0 4px; line-height:1.7;">999 ถนนจันทนิมิต 2 ตำบลจันทนิมิต อำเภอเมืองจันทบุรี จังหวัดจันทบุรี 22000</p>
+      <p style="font-size:13px; color:rgba(255,255,255,0.7); margin:0 0 2px; line-height:1.7;">039-311-073 ต่อ 304 (งานฝ่ายบริหาร) &nbsp;|&nbsp; ต่อ 306 (งานฝ่ายบริการ)</p>
+      <p style="font-size:13px; color:rgba(255,255,255,0.7); margin:0 0 4px; line-height:1.7;">วันจันทร์ – วันศุกร์ เวลา 08:30 – 16:30 น. &nbsp;|&nbsp; ยกเว้นวันหยุดราชการ</p>
+      <span style="background:rgba(245,158,11,0.18); border:0.5px solid rgba(245,158,11,0.45); color:#fcd34d; font-size:11.5px; padding:3px 12px; border-radius:20px; display:inline-block; margin-top:8px;">
+        <i class="fas fa-tools" style="font-size:10.5px; margin-right:5px;"></i>อยู่ในระหว่างการพัฒนาระบบ
+      </span>
+      <hr style="border:none; border-top:0.5px solid rgba(255,255,255,0.15); margin:16px 0;">
+      <div style="display:flex; justify-content:center; gap:12px; margin-bottom:14px;">
+        <a href="https://www.facebook.com/profile.php?id=100068959037043" target="_blank" rel="noopener"
+           style="display:inline-flex; align-items:center; gap:8px; padding:8px 18px; border-radius:8px; background:#1877f2; color:#fff; font-family:'Sarabun',sans-serif; font-size:13.5px; font-weight:500; text-decoration:none;">
+          <i class="fab fa-facebook-f"></i> Facebook
+        </a>
+      </div>
+      <p style="font-size:12.5px; color:rgba(255,255,255,0.5); margin:0 0 10px;">จัดทำโดย <span style="color:rgba(255,255,255,0.8); font-weight:500;">นายกิตติศักดิ์ ภานุพันธ์</span> · กองสาธารณสุขและสิ่งแวดล้อม</p>
+      <div style="font-size:12px; color:rgba(255,255,255,0.35);">© 2569 กองสาธารณสุขและสิ่งแวดล้อม เทศบาลเมืองจันทนิมิต · สงวนลิขสิทธิ์ตามกฎหมาย</div>
+    </footer>
+
     </body>
 </html>
