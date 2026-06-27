@@ -45,7 +45,10 @@
             .completed-row td { color: #64748b; }
             .btn-search { background-color: #0f2c59; color: white; border-radius: 20px; padding: 8px 25px; transition: 0.3s; }
             .btn-search:hover { background-color: #1a4d80; color: white; }
-            .announcement-banner { background: linear-gradient(90deg, #ef4444, #f59e0b); color: white; padding: 10px 20px; text-align: center; font-weight: 500; z-index: 1050; position: sticky; top: 0; }
+            .announcement-banner { background: linear-gradient(90deg, #ef4444, #f59e0b); color: white; padding: 10px 20px; font-weight: 500; z-index: 1050; position: sticky; top: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+            .announcement-banner .banner-content { flex: 1; text-align: center; font-size: 0.9rem; line-height: 1.5; }
+            .announcement-banner .banner-close-btn { flex-shrink: 0; background: rgba(255,255,255,0.25); border: none; color: white; border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.85rem; transition: background 0.2s; }
+            .announcement-banner .banner-close-btn:hover { background: rgba(255,255,255,0.45); }
             .service-card-modern { background: white; border-radius: 20px; padding: 35px 25px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.04); border: 1px solid #e2e8f0; transition: all 0.3s ease; cursor: pointer; position: relative; overflow: hidden; height: 100%; }
             .service-card-modern:hover { transform: translateY(-8px); box-shadow: 0 15px 35px rgba(15, 44, 89, 0.15); border-color: #0f2c59; }
             .service-card-modern.disabled-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.08); border-color: #cbd5e1; }
@@ -84,10 +87,14 @@
         </script>
         
         <div id="announcement-banner" class="announcement-banner d-none">
-            <i class="fas fa-bullhorn"></i> <b id="banner-title" class="d-none">ประกาศ:</b> 
-            <span id="banner-text">กำลังตรวจสอบ...</span>
-            <a id="banner-link" href="#" target="_blank" class="d-none" style="color: white; text-decoration: underline; font-weight: 700; margin-left: 5px;"></a>
-            <button class="btn-close btn-close-white float-end" onclick="document.getElementById('announcement-banner').style.display='none'"></button>
+            <div class="banner-content">
+                <i class="fas fa-bullhorn"></i> <b id="banner-title" class="d-none">ประกาศ:</b>
+                <span id="banner-text">กำลังตรวจสอบ...</span>
+                <a id="banner-link" href="#" target="_blank" class="d-none" style="color: white; text-decoration: underline; font-weight: 700; margin-left: 5px;"></a>
+            </div>
+            <button class="banner-close-btn" onclick="document.getElementById('announcement-banner').style.display='none'">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
 
         <nav class="top-navbar d-flex justify-content-between align-items-end">
