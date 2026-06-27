@@ -104,7 +104,7 @@
             <div class="top-nav-tabs">
                 <a href="javascript:void(0);" class="top-nav-link active" onclick="switchProject('home')"><i class="fas fa-home"></i> หน้าแรก</a>
                 <a href="javascript:void(0);" class="top-nav-link" onclick="switchProject('pet')"><i class="fas fa-paw"></i> โครงการทำหมันสุนัขและแมว</a>
-                <a href="javascript:void(0);" class="top-nav-link" onclick="switchProject('food')"><i class="fas fa-utensils"></i> ใบอนุญาตสะสมอาหาร</a>
+                <a href="javascript:void(0);" class="top-nav-link" onclick="switchProject('food')"><i class="fas fa-utensils"></i> ใบอนุญาต</a>
             </div>
         </nav>
 
@@ -131,7 +131,7 @@
                     <div id="sidebar-pet-project" class="d-none">
                         <div class="sidebar-heading">สถานะการนัดหมายคิว</div>
                         <a class="nav-link sidebar-filter-btn active" href="javascript:void(0);" onclick="filterByStatus('ทั้งหมด', this, 'search')">
-                            <span class="status-dot dot-all"></span> คิว ณ ปัจจุบัน (รวม)
+                            <span class="status-dot dot-all"></span> รายการคิวทั้งหมด
                         </a>
                         <a class="nav-link sidebar-filter-btn" href="javascript:void(0);" onclick="filterByStatus('นัดหมายคิวแล้ว', this, 'search')">
                             <span class="status-dot dot-scheduled"></span> นัดหมายคิวแล้ว
@@ -210,17 +210,17 @@
                             </div>
                             <div class="col-md-5">
                                 <div class="service-card-modern disabled-card" onclick="switchProject('food')">
-                                    <div class="badge-status bg-secondary">กำลังพัฒนา</div>
-                                    <div class="icon-wrapper bg-gray-light"><i class="fas fa-utensils fa-2x" style="color: #64748b;"></i></div>
-                                    <h5 class="fw-bold" style="color: #64748b;">ใบอนุญาตสะสมอาหาร</h5>
-                                    <p class="text-muted small mb-0 mt-2">ระบบลงทะเบียนและต่ออายุใบอนุญาตออนไลน์</p>
-                                    <div class="mt-4 text-secondary fw-bold" style="font-size: 0.95rem;">เร็วๆ นี้ <i class="fas fa-tools ms-1"></i></div>
+                                    <div class="badge-status bg-success">เปิดให้บริการ</div>
+                                    <div class="icon-wrapper bg-blue-light"><i class="fas fa-paw fa-2x" style="color: #0f2c59;"></i></div>
+                                    <h5 class="fw-bold" style="color: #0f2c59;">ใบอนุญาต</h5>
+                                    <p class="text-muted small mb-0 mt-2">ระบบตรวจสอบสถานะและเช็คใบอนุญาต</p>
+                                    <div class="mt-4 text-primary fw-bold" style="font-size: 0.95rem;">คลิกเพื่อเข้าหน้านี้ <i class="fas fa-arrow-right ms-1"></i></div>
                                 </div>
                             </div>
                         </div>
                         <div class="mt-5 mb-3 text-center p-4" style="background: #e0f2fe; border-radius: 15px; border: 1px dashed #7dd3fc;">
                             <h6 class="fw-bold" style="color: #0369a1;"><i class="fas fa-headset"></i> ต้องการความช่วยเหลือ?</h6>
-                            <p class="mb-0 text-dark" style="font-size: 0.9rem;">หากมีข้อสงสัยเกี่ยวกับการใช้งานระบบ สามารถติดต่อเจ้าหน้าที่ได้ที่เบอร์ <b class="text-danger">039-311-073 ต่อ 306</b> ในวันและเวลาราชการ</p>
+                            <p class="mb-0 text-dark" style="font-size: 0.9rem;">หากมีข้อสงสัยเกี่ยวกับการใช้งานระบบ สามารถติดต่อเจ้าหน้าที่ได้ที่เบอร์ <b class="text-danger">039-311-073 ต่อ 306 (ฝ่ายบริการ)</b> ในวันและเวลาราชการ</p>
                         </div>
                     </div>
 
@@ -363,7 +363,7 @@
                             <h4 style="color: #0f2c59; font-weight: 700; margin-bottom: 20px;">ติดต่อเจ้าหน้าที่</h4>
                             <hr>
                             <p>🏢 <b>สถานที่ติดต่อ:</b> กองสาธารณสุขและสิ่งแวดล้อม (ชั้น 3) เทศบาลเมืองจันทนิมิต</p>
-                            <p>📞 <b>เบอร์โทรศัพท์:</b> 039-311-073 ต่อ 306</p>
+                            <p>📞 <b>เบอร์โทรศัพท์:</b> 039-311-073 ต่อ 306 (ฝ่ายบริการ)</p>
                             <p>🕒 <b>เวลาทำการ:</b> วันจันทร์ - วันศุกร์ เวลา 08:30 น. - 16:30 น. ยกเว้นวันหยุดราชการ</p>
                             <p><i class="fab fa-line text-success"></i> <a href="https://line.me/ti/g/NzNCvxyMqP" target="_blank" class="text-success fw-bold text-decoration-none">เข้าร่วมกลุ่ม LINE ทำหมันสุนัขและแมว เทศบาลเมืองจันทนิมิต</a></p>
                         </div>
@@ -464,11 +464,35 @@
 
                         <!-- Tab: ค้นหาสถานะ -->
                         <div id="tab-food-search" class="d-none">
-                            <h4 style="color:#0f2c59; font-weight:700; margin-bottom:20px;"><i class="fas fa-search"></i> ค้นหาสถานะคำขอใบอนุญาต</h4>
-                            <div class="content-card p-4" style="border-radius:12px; text-align:center; padding:60px 20px !important;">
-                                <i class="fas fa-tools fa-3x text-muted mb-3"></i>
-                                <h5 style="color:#64748b; font-weight:600;">กำลังพัฒนาระบบค้นหา</h5>
-                                <p class="text-muted mb-0">ระบบค้นหาสถานะคำขอออนไลน์อยู่ในระหว่างพัฒนา<br>สามารถสอบถามสถานะได้ที่กองสาธารณสุขฯ โทร. 039-311-073 ต่อ 306</p>
+                            <h4 style="color:#0f2c59; font-weight:700; margin-bottom:6px;"><i class="fas fa-search"></i> ค้นหาสถานะใบอนุญาต</h4>
+                            <p class="text-muted mb-4" style="font-size:0.92rem;">กรอกเลขบัตรประชาชน 13 หลัก เพื่อตรวจสอบสถานะใบอนุญาตของท่าน</p>
+                            <div class="content-card p-4 mb-4" style="border-radius:12px;">
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-12 col-md-8">
+                                        <label class="form-label fw-bold" style="font-size:0.88rem; color:#334155;">เลขบัตรประชาชน <span class="text-danger">*</span></label>
+                                        <input type="text" id="license-search-input" class="form-control"
+                                            placeholder="กรอกเลขบัตรประชาชน 13 หลัก"
+                                            maxlength="13"
+                                            oninput="this.value=this.value.replace(/[^0-9]/g,''); updateLicenseSearchBtn()"
+                                            onkeydown="if(event.key==='Enter' && this.value.length===13) searchLicense()"
+                                            style="border-radius:10px; font-size:1rem; padding:10px 14px; letter-spacing:2px;">
+                                        <div id="license-input-hint" style="font-size:0.82rem; margin-top:5px; color:#94a3b8;">
+                                            <i class="fas fa-info-circle me-1"></i>กรอกตัวเลข 13 หลัก (<span id="license-digit-count">0</span>/13)
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-4" style="padding-bottom:28px;">
+                                        <button id="license-search-btn" class="btn w-100" onclick="searchLicense()" disabled
+                                            style="background:#94a3b8; color:white; border-radius:10px; padding:10px; font-weight:600; transition:0.2s;">
+                                            <i class="fas fa-search me-2"></i>ค้นหา
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="license-search-result">
+                                <div class="content-card p-4 text-center" style="border-radius:12px; color:#94a3b8;">
+                                    <i class="fas fa-id-card fa-3x mb-3" style="color:#cbd5e1;"></i>
+                                    <p class="mb-0">กรอกเลขบัตรประชาชน 13 หลักเพื่อค้นหา</p>
+                                </div>
                             </div>
                         </div>
 
@@ -480,7 +504,7 @@
                                     <div class="content-card p-4" style="border-radius:12px;">
                                         <h6 style="font-weight:700; color:#0f2c59;"><i class="fas fa-building me-2"></i>กองสาธารณสุขและสิ่งแวดล้อม</h6>
                                         <p class="text-muted mb-1" style="font-size:0.95rem;"><i class="fas fa-map-marker-alt me-2 text-danger"></i>999 ถนนจันทนิมิต 2 ต.จันทนิมิต อ.เมือง จ.จันทบุรี 22000</p>
-                                        <p class="text-muted mb-1" style="font-size:0.95rem;"><i class="fas fa-phone me-2 text-success"></i>039-311-073 ต่อ 306</p>
+                                        <p class="text-muted mb-1" style="font-size:0.95rem;"><i class="fas fa-phone me-2 text-success"></i>039-311-073 ต่อ 304 (ฝ่ายบริหาร)</p>
                                         <p class="text-muted mb-0" style="font-size:0.95rem;"><i class="fas fa-clock me-2 text-primary"></i>วันจันทร์ – วันศุกร์ เวลา 08:30 – 16:30 น.</p>
                                     </div>
                                 </div>
@@ -620,7 +644,7 @@
                   filteredData = filteredData.filter(function(row) {
                       var rowStatus = row[3] ? row[3].toString().trim() : "";
                       if (currentStatusFilter === 'ยกเลิก') return rowStatus.includes('ยกเลิก') || rowStatus.includes('ไม่มาตามนัด') || rowStatus.includes('นอกเขตพื้นที่');
-                      if (currentStatusFilter === 'อยู่ระหว่างการตรวจสอบ') return rowStatus === "";
+                      if (currentStatusFilter === 'อยู่ระหว่างการตรวจสอบ') return rowStatus === "อยู่ระหว่างการตรวจสอบ" || rowStatus === "";
                       return rowStatus === currentStatusFilter;
                   });
               }
@@ -852,6 +876,63 @@
                   html += '<div class="col-6 col-md-4 mb-4"><img src="' + thumbUrl + '" class="img-fluid rounded shadow-sm" loading="lazy"></div>';
               }
               gridContainer.innerHTML = html;
+          }
+
+          function updateLicenseSearchBtn() {
+              var val = document.getElementById('license-search-input').value;
+              var btn = document.getElementById('license-search-btn');
+              document.getElementById('license-digit-count').innerText = val.length;
+              if (val.length === 13) {
+                  btn.disabled = false;
+                  btn.style.background = '#0f2c59';
+              } else {
+                  btn.disabled = true;
+                  btn.style.background = '#94a3b8';
+              }
+          }
+
+          function searchLicense() {
+              var keyword = document.getElementById('license-search-input').value.trim();
+              var resultDiv = document.getElementById('license-search-result');
+              if (keyword.length !== 13) {
+                  resultDiv.innerHTML = '<div class="content-card p-4 text-center" style="border-radius:12px; border:1px solid #fcd34d; background:#fffbeb;"><i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i><p class="mb-0" style="color:#b45309;">กรุณากรอกเลขบัตรประชาชนให้ครบ 13 หลัก</p></div>';
+                  return;
+              }
+              resultDiv.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div><p class="mt-2 text-muted">กำลังค้นหา...</p></div>';
+              callGAS("searchLicense", { keyword: keyword }, function(data) {
+                  if (!data || data.length === 0) {
+                      resultDiv.innerHTML = '<div class="content-card p-4 text-center" style="border-radius:12px;"><i class="fas fa-folder-open fa-3x text-muted mb-3"></i><h6 style="color:#64748b;">ไม่พบข้อมูล</h6><p class="text-muted mb-0">ไม่พบใบอนุญาตที่ตรงกับเลขบัตรประชาชนนี้<br>หากมีข้อสงสัยติดต่อ 039-311-073 ต่อ 304 (ฝ่ายบริหาร)</p></div>';
+                      return;
+                  }
+                  var sColor = { 'อนุมัติแล้ว':'#059669','รอดำเนินการ':'#d97706','อยู่ระหว่างพิจารณา':'#0369a1','ไม่อนุมัติ':'#dc2626','หมดอายุ':'#64748b' };
+                  var sIcon  = { 'อนุมัติแล้ว':'fa-check-circle','รอดำเนินการ':'fa-clock','อยู่ระหว่างพิจารณา':'fa-hourglass-half','ไม่อนุมัติ':'fa-times-circle','หมดอายุ':'fa-calendar-times' };
+                  var html = '<div class="row g-3">';
+                  for (var i = 0; i < data.length; i++) {
+                      var d = data[i];
+                      var c = sColor[d[3]] || '#64748b';
+                      var ic = sIcon[d[3]] || 'fa-info-circle';
+                      html += '<div class="col-12"><div class="content-card p-4" style="border-radius:12px; border-left:5px solid ' + c + ';">';
+                      html += '<div class="d-flex justify-content-between align-items-start flex-wrap gap-2">';
+                      html += '<div><h6 style="font-weight:700; color:#0f2c59; margin:0 0 4px;">' + (d[0]||'-') + '</h6>';
+                      html += '<p class="mb-1" style="color:#475569; font-size:0.9rem;"><i class="fas fa-store me-1"></i>' + (d[1]||'-') + '</p>';
+                      html += '<p class="mb-0" style="color:#64748b; font-size:0.85rem;"><i class="fas fa-tag me-1"></i>' + (d[2]||'-') + '</p></div>';
+                      html += '<span style="background:' + c + '1a; color:' + c + '; border:1px solid ' + c + '4d; padding:5px 14px; border-radius:20px; font-size:0.82rem; font-weight:600; white-space:nowrap;"><i class="fas ' + ic + ' me-1"></i>' + (d[3]||'-') + '</span></div>';
+                      html += '<hr style="margin:12px 0; border-color:#f1f5f9;">';
+                      html += '<div class="row g-2" style="font-size:0.88rem; color:#64748b;">';
+                      html += '<div class="col-6"><i class="fas fa-calendar-plus me-1 text-success"></i>วันที่ออก: <b style="color:#334155;">' + (d[4]||'-') + '</b></div>';
+                      html += '<div class="col-6"><i class="fas fa-calendar-times me-1 text-danger"></i>วันหมดอายุ: <b style="color:#334155;">' + (d[5]||'-') + '</b></div>';
+                      var pickup = d[6] || 'ยังไม่ได้มารับใบอนุญาต';
+                      var pickupHtml = pickup === 'มารับใบอนุญาตแล้ว'
+                          ? '<span style="background:#dcfce7; color:#166534; border:1px solid #bbf7d0; padding:3px 10px; border-radius:20px; font-size:0.82rem; font-weight:600;"><i class="fas fa-check-circle me-1"></i>มารับใบอนุญาตแล้ว</span>'
+                          : '<span style="background:#fef9c3; color:#854d0e; border:1px solid #fde047; padding:3px 10px; border-radius:20px; font-size:0.82rem; font-weight:600;"><i class="fas fa-clock me-1"></i>ยังไม่ได้มารับใบอนุญาต</span>';
+                      html += '<div class="col-12 mt-1"><i class="fas fa-hand-holding me-1"></i>สถานะรับใบ: ' + pickupHtml + '</div>';
+                      html += '</div></div></div>';
+                  }
+                  html += '</div>';
+                  resultDiv.innerHTML = html;
+              }, function() {
+                  resultDiv.innerHTML = '<div class="content-card p-4 text-center" style="border-radius:12px;"><i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i><p class="mb-0 text-muted">เชื่อมต่อระบบไม่ได้ กรุณาลองใหม่</p></div>';
+              });
           }
 
           function backToAlbums() {
