@@ -134,10 +134,20 @@
             <a class="nav-tab" onclick="switchSection('settings')" id="tab-settings">
                 <i class="fas fa-cog"></i> ตั้งค่าระบบ
             </a>
+            <a class="nav-tab" onclick="switchSection('log')" id="tab-log" style="display:none;">
+                <i class="fas fa-history"></i> Activity Log
+            </a>
         </div>
-        <button class="btn-logout" onclick="logout()">
-            <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
-        </button>
+        <div class="d-flex align-items-center gap-2">
+            <div style="text-align:right; line-height:1.2;">
+                <div style="font-size:0.82rem; color:rgba(255,255,255,0.6);">เข้าสู่ระบบในฐานะ</div>
+                <div style="font-size:0.88rem; font-weight:600; color:white;" id="display-username">-</div>
+                <div style="font-size:0.75rem; color:#fbbf24;" id="display-role">-</div>
+            </div>
+            <button class="btn-logout" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
+            </button>
+        </div>
     </div>
 
     <div class="admin-body">
@@ -170,6 +180,9 @@
                 <a class="sidebar-link active" onclick="switchSidebar('license-all', this)">
                     <span class="icon"><i class="fas fa-folder-open"></i></span> คำขอทั้งหมด
                 </a>
+                <a class="sidebar-link" onclick="switchSidebar('license-expiring', this)">
+                    <span class="icon"><i class="fas fa-exclamation-triangle" style="color:#dc2626;"></i></span> ใกล้หมดอายุ (90 วัน)
+                </a>
                 <a class="sidebar-link" onclick="switchSidebar('license-pending', this)">
                     <span class="icon"><i class="fas fa-hourglass-half"></i></span> รออนุมัติ
                 </a>
@@ -194,12 +207,21 @@
                     <span class="icon"><i class="fas fa-user-lock"></i></span> บัญชีผู้ใช้
                 </a>
             </div>
+
+            <!-- เมนู: Activity Log -->
+            <div id="sidebar-log" class="sidebar-section-group d-none">
+                <div class="sidebar-section">Activity Log</div>
+                <a class="sidebar-link active" onclick="switchSidebar('log-main', this)">
+                    <span class="icon"><i class="fas fa-history"></i></span> ประวัติการแก้ไข
+                </a>
+            </div>
         </nav>
 
         <!-- MAIN -->
         <main class="admin-main">
 
             <!-- ===== SECTION: PET QUEUE ===== -->
+            <!-- ===== SECTION: DASHBOARD ===== -->
             <div id="section-pet-queue" class="page-section active">
                 <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
                     <div>
@@ -321,9 +343,54 @@
                         <h5 style="color:#0f2c59;font-weight:700;margin:0;">รายการใบอนุญาตทั้งหมด</h5>
                         <p class="text-muted mb-0" style="font-size:0.88rem;">จัดการข้อมูลใบอนุญาตสาธารณสุขและสิ่งแวดล้อม</p>
                     </div>
-                    <button class="btn btn-success" style="border-radius:10px;" onclick="showLicenseForm(null)">
-                        <i class="fas fa-plus me-1"></i> เพิ่มใบอนุญาตใหม่
-                    </button>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary" style="border-radius:10px;" onclick="loadLicenseData()">
+                            <i class="fas fa-sync-alt me-1"></i> รีเฟรชข้อมูล
+                        </button>
+                        <button class="btn btn-success" style="border-radius:10px;" onclick="showLicenseForm(null)">
+                            <i class="fas fa-plus me-1"></i> เพิ่มใบอนุญาตใหม่
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stat Box ใบอนุญาต -->
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-md-2">
+                        <div class="stat-box" style="border-left-color:#64748b;">
+                            <div class="s-label">ทั้งหมด</div>
+                            <div class="s-number" style="color:#64748b;" id="db-lic-total">-</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <div class="stat-box" style="border-left-color:#f59e0b;">
+                            <div class="s-label">รอดำเนินการ</div>
+                            <div class="s-number" style="color:#f59e0b;" id="db-lic-pending">-</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <div class="stat-box" style="border-left-color:#0369a1;">
+                            <div class="s-label">อยู่ระหว่างพิจารณา</div>
+                            <div class="s-number" style="color:#0369a1;" id="db-lic-reviewing">-</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <div class="stat-box" style="border-left-color:#198754;">
+                            <div class="s-label">อนุมัติแล้ว</div>
+                            <div class="s-number" style="color:#198754;" id="db-lic-approved">-</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <div class="stat-box" style="border-left-color:#d97706; background:#fffbeb;">
+                            <div class="s-label">ยังไม่มารับใบ</div>
+                            <div class="s-number" style="color:#d97706;" id="db-lic-not-pickup">-</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <div class="stat-box" style="border-left-color:#dc2626; background:#fff1f2;">
+                            <div class="s-label">หมดอายุ</div>
+                            <div class="s-number" style="color:#dc2626;" id="db-lic-expired">-</div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- ฟอร์มเพิ่ม/แก้ไข -->
@@ -381,7 +448,11 @@
                             </select>
                         </div>
                         <div class="col-12 col-md-9">
-                            <label class="form-label fw-bold" style="font-size:0.88rem;">วันที่ออกใบอนุญาต</label>
+                            <label class="form-label fw-bold" style="font-size:0.88rem;">วันที่ออกใบอนุญาต
+                                <button type="button" onclick="setTodayIssue()" style="margin-left:8px; background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd; border-radius:6px; font-size:0.78rem; padding:2px 8px; font-weight:600; cursor:pointer;">
+                                    <i class="fas fa-calendar-day me-1"></i>วันนี้
+                                </button>
+                            </label>
                             <div class="d-flex gap-2">
                                 <select id="lf-issue-day" class="form-select" style="width:90px; flex-shrink:0;">
                                     <option value="">วัน</option>
@@ -481,6 +552,30 @@
                     </table>
                 </div>
             </div>
+            <!-- ===== SECTION: LICENSE EXPIRING ===== -->
+            <div id="section-license-expiring" class="page-section">
+                <h5 style="color:#dc2626;font-weight:700;" class="mb-1">
+                    <i class="fas fa-exclamation-triangle me-2"></i>ใบอนุญาตที่จะหมดอายุใน 90 วัน
+                </h5>
+                <p class="text-muted mb-3" style="font-size:0.88rem;">ควรติดต่อแจ้งผู้ประกอบการให้ต่ออายุใบอนุญาตโดยเร็ว</p>
+                <div class="table-wrapper table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead><tr>
+                            <th class="text-center">#</th>
+                            <th>ชื่อ-สกุล</th>
+                            <th>สถานประกอบการ</th>
+                            <th>ประเภท</th>
+                            <th>วันหมดอายุ</th>
+                            <th>สถานะ</th>
+                            <th>สถานะรับใบ</th>
+                        </tr></thead>
+                        <tbody id="db-expiring-tbody">
+                            <tr><td colspan="7" class="text-center py-3 text-muted">กำลังโหลด...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <div id="section-license-pending" class="page-section">
                 <h5 style="color:#0f2c59;font-weight:700;" class="mb-3"><i class="fas fa-hourglass-half text-warning me-2"></i>รออนุมัติ</h5>
                 <div class="table-wrapper table-responsive">
@@ -574,21 +669,62 @@
             <div id="section-settings-account" class="page-section">
                 <h5 style="color:#0f2c59;font-weight:700;" class="mb-3">บัญชีผู้ใช้งาน Admin</h5>
                 <div class="content-card">
-                    <p class="text-muted" style="font-size:0.9rem;">แก้ไข Username / Password ได้ที่ <b>Google Sheets → ชีต settings → แถวที่ 2</b></p>
+                    <p class="text-muted" style="font-size:0.9rem;">แก้ไข Username / Password / Role ได้ที่ <b>Google Sheets → ชีต settings</b></p>
                     <div class="setting-row">
-                        <div>
-                            <div class="setting-label">Username</div>
-                            <div class="setting-desc">คอลัมน์ E → ชื่อผู้ใช้สำหรับ Login</div>
-                        </div>
+                        <div><div class="setting-label">Username</div><div class="setting-desc">คอลัมน์ E → ชื่อผู้ใช้สำหรับ Login</div></div>
                         <span class="dev-badge">แก้ใน Sheets</span>
                     </div>
                     <div class="setting-row">
-                        <div>
-                            <div class="setting-label">Password</div>
-                            <div class="setting-desc">คอลัมน์ F → รหัสผ่าน (ต้อง Format เป็น Plain Text)</div>
-                        </div>
+                        <div><div class="setting-label">Password</div><div class="setting-desc">คอลัมน์ F → รหัสผ่าน (ต้อง Format เป็น Plain Text)</div></div>
                         <span class="dev-badge">แก้ใน Sheets</span>
                     </div>
+                    <div class="setting-row">
+                        <div><div class="setting-label">Role / สิทธิ์</div><div class="setting-desc">คอลัมน์ G → <code>superadmin</code> / <code>pet</code> / <code>license</code></div></div>
+                        <span class="dev-badge">แก้ใน Sheets</span>
+                    </div>
+                    <div class="mt-3 p-3" style="background:#f0fdf4; border-radius:10px; border:1px solid #bbf7d0; font-size:0.88rem;">
+                        <b>สิทธิ์การเข้าถึง:</b><br>
+                        👑 <code>superadmin</code> → เข้าได้ทุกหน้า + ดู Activity Log<br>
+                        🐾 <code>pet</code> → เข้าได้เฉพาะหน้าโครงการทำหมัน<br>
+                        📄 <code>license</code> → เข้าได้เฉพาะหน้าใบอนุญาต
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== SECTION: ACTIVITY LOG ===== -->
+            <div id="section-log-main" class="page-section">
+                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                    <div>
+                        <h5 style="color:#0f2c59;font-weight:700;margin:0;"><i class="fas fa-history me-2"></i>Activity Log</h5>
+                        <p class="text-muted mb-0" style="font-size:0.88rem;">ประวัติการแก้ไขข้อมูลทั้งหมด (200 รายการล่าสุด)</p>
+                    </div>
+                    <div class="d-flex gap-2 align-items-center">
+                        <select id="log-filter-cat" class="form-select form-select-sm" onchange="filterLog()" style="width:160px; border-radius:8px;">
+                            <option value="">ทุกหมวด</option>
+                            <option value="สมุดจดคิว">คิวทำหมัน</option>
+                            <option value="ใบอนุญาต">ใบอนุญาต</option>
+                        </select>
+                        <button class="btn btn-outline-primary btn-sm" onclick="loadActivityLog()" style="border-radius:8px;">
+                            <i class="fas fa-sync-alt me-1"></i> รีเฟรช
+                        </button>
+                    </div>
+                </div>
+                <div class="table-wrapper table-responsive">
+                    <table class="table table-hover mb-0" style="font-size:0.88rem;">
+                        <thead>
+                            <tr>
+                                <th class="text-center">#</th>
+                                <th>วันเวลา</th>
+                                <th>ผู้ใช้งาน</th>
+                                <th>การกระทำ</th>
+                                <th>รายละเอียด</th>
+                                <th>หมวด</th>
+                            </tr>
+                        </thead>
+                        <tbody id="log-tbody">
+                            <tr><td colspan="6" class="text-center py-4 text-muted">กำลังโหลด...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -602,6 +738,10 @@
 <script>
     var globalAdminData = [];
     var currentSection = 'pet-queue';
+    var currentRole = '';
+    var currentUser = '';
+    var PAGE_SIZE = 20;
+    var currentPage = 1;
 
     // ===== LOGIN =====
     function login() {
@@ -615,9 +755,16 @@
         err.classList.add("d-none");
         callGAS("checkAdminLogin", { username: user, password: pass }, function(response) {
             if(response.success) {
+                currentRole = response.role || "superadmin";
+                currentUser = response.displayName || user;
                 document.getElementById("login-section").classList.add("d-none");
                 document.getElementById("admin-dashboard").classList.remove("d-none");
-                loadData();
+                document.getElementById("display-username").innerText = currentUser;
+                document.getElementById("display-role").innerText = getRoleLabel(currentRole);
+                applyRolePermissions();
+                var startSection = (currentRole === 'license') ? 'license' : 'pet';
+                switchSection(startSection);
+                if (currentRole !== 'license') loadData();
             } else {
                 err.innerText = response.message;
                 err.classList.remove("d-none");
@@ -632,9 +779,51 @@
         });
     }
 
+    function getRoleLabel(role) {
+        if (role === 'superadmin') return '👑 Super Admin';
+        if (role === 'pet') return '🐾 Admin ทำหมัน';
+        if (role === 'license') return '📄 Admin ใบอนุญาต';
+        return role;
+    }
+
+    function applyRolePermissions() {
+        // ซ่อน/แสดงแท็บตาม role
+        var tabPet      = document.getElementById('tab-pet');
+        var tabLicense  = document.getElementById('tab-license');
+        var tabSettings = document.getElementById('tab-settings');
+        if (currentRole === 'pet') {
+            // เห็นแค่ทำหมัน
+            if (tabLicense)  tabLicense.style.display  = 'none';
+            if (tabSettings) tabSettings.style.display = 'none';
+        } else if (currentRole === 'license') {
+            // เห็นแค่ใบอนุญาต
+            if (tabPet)      tabPet.style.display      = 'none';
+            if (tabSettings) tabSettings.style.display = 'none';
+        }
+        // superadmin เห็นทุกอย่าง + แท็บ Log
+        if (currentRole === 'superadmin') {
+            document.getElementById('tab-log').style.display = 'flex';
+        }
+    }
+
     function logout() {
+        currentRole = '';
+        currentUser = '';
+        currentPage = 1;
         document.getElementById("username").value = "";
         document.getElementById("password").value = "";
+        // reset ปุ่ม login
+        var btn = document.getElementById("btn-login-submit");
+        if (btn) { btn.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>เข้าสู่ระบบหลังบ้าน'; btn.disabled = false; }
+        // reset error
+        var err = document.getElementById("login-error");
+        if (err) err.classList.add("d-none");
+        // reset tabs
+        ['tab-pet','tab-license','tab-settings','tab-log'].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (el) el.style.display = '';
+        });
+        document.getElementById('tab-log').style.display = 'none';
         document.getElementById("login-section").classList.remove("d-none");
         document.getElementById("admin-dashboard").classList.add("d-none");
     }
@@ -648,6 +837,125 @@
         var firstLink = document.querySelector('#sidebar-' + section + ' .sidebar-link');
         if (firstLink) firstLink.click();
         if (section === 'license') loadLicenseData();
+        if (section === 'log') loadActivityLog();
+    }
+
+    // ===== PAGINATION =====
+    function renderTable(dataArray, tbodyId, showDate) {
+        var tbody = document.getElementById(tbodyId);
+        if (!tbody) return;
+        if (dataArray.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">ไม่พบข้อมูล</td></tr>';
+            renderPagination(0, tbodyId);
+            return;
+        }
+        var totalPages = Math.ceil(dataArray.length / PAGE_SIZE);
+        if (currentPage > totalPages) currentPage = 1;
+        var start = (currentPage - 1) * PAGE_SIZE;
+        var pageData = dataArray.slice(start, start + PAGE_SIZE);
+        var html = "";
+        for (var i = 0; i < pageData.length; i++) {
+            var row = pageData[i];
+            var prefix = row[1] ? row[1].toString().trim() : "";
+            var name = prefix + (row[2] ? row[2].toString().trim() : "");
+            var status = row[3] ? row[3].toString().trim() : "รอตรวจสอบ";
+            var date = row[4] ? row[4].toString().trim() : "-";
+            var phone = row[5] ? row[5].toString() : "";
+            var petType = (row[8] ? row[8].toString() : "สัตว์มีเจ้าของ") + " (" + (row[9] ? row[9] : "0") + " ตัว)";
+            var rowNumber = row[row.length - 1];
+            var trClass = "", badgeClass = "bg-secondary";
+            if (status === "นัดหมายคิวแล้ว") { badgeClass = "bg-success"; trClass = "row-success"; }
+            else if (status === "ทำเสร็จแล้ว") { badgeClass = "bg-primary"; trClass = "row-completed"; }
+            else if (status.includes("ยกเลิก") || status.includes("ไม่มาตามนัด") || status.includes("นอกเขตพื้นที่")) { badgeClass = "bg-danger"; trClass = "row-cancelled"; }
+            else if (status === "รอดำเนินการ") { badgeClass = "bg-warning text-dark"; }
+            html += '<tr class="' + trClass + '">';
+            html += '<td class="text-center fw-bold text-muted">' + (start + i + 1) + '</td>';
+            if (showDate) {
+                html += '<td><span class="badge ' + badgeClass + '">' + status + '</span></td>';
+                html += '<td class="text-danger fw-bold">' + date + '</td>';
+                html += '<td>' + name + '</td>';
+            } else {
+                html += '<td>' + name + '</td>';
+                if (tbodyId === 'tbody-scheduled') html += '<td class="text-danger fw-bold">' + date + '</td>';
+                else html += '<td><span class="badge ' + badgeClass + '">' + status + '</span></td>';
+            }
+            html += '<td>' + phone + '</td>';
+            html += '<td>' + petType + '</td>';
+            html += '<td><div class="action-btns">';
+            html += '<button class="btn btn-outline-success" onclick="changeStatus(' + rowNumber + ', \'นัดหมายคิวแล้ว\')"><i class="fas fa-calendar-check"></i> นัดคิว</button>';
+            html += '<button class="btn btn-outline-primary" onclick="changeStatus(' + rowNumber + ', \'ทำเสร็จแล้ว\')"><i class="fas fa-check-circle"></i> เสร็จแล้ว</button>';
+            html += '<button class="btn btn-outline-danger" onclick="changeStatus(' + rowNumber + ', \'ยกเลิก\')"><i class="fas fa-times-circle"></i> ยกเลิก</button>';
+            html += '</div></td></tr>';
+        }
+        tbody.innerHTML = html;
+        renderPagination(dataArray.length, tbodyId);
+    }
+
+    function renderPagination(total, tbodyId) {
+        var paginId = tbodyId + '-paginator';
+        var existing = document.getElementById(paginId);
+        if (existing) existing.remove();
+        if (total <= PAGE_SIZE) return;
+        var totalPages = Math.ceil(total / PAGE_SIZE);
+        var paginator = document.createElement('div');
+        paginator.id = paginId;
+        paginator.style.cssText = 'display:flex; justify-content:center; align-items:center; gap:8px; padding:12px 0; flex-wrap:wrap;';
+        var html = '';
+        html += '<button class="btn btn-sm btn-outline-secondary" style="border-radius:8px;" onclick="changePage(' + (currentPage-1) + ', \'' + tbodyId + '\')" ' + (currentPage===1?'disabled':'') + '>‹ ก่อนหน้า</button>';
+        for (var p = 1; p <= totalPages; p++) {
+            var active = p === currentPage ? 'btn-primary' : 'btn-outline-primary';
+            html += '<button class="btn btn-sm ' + active + '" style="border-radius:8px; min-width:36px;" onclick="changePage(' + p + ', \'' + tbodyId + '\')">' + p + '</button>';
+        }
+        html += '<button class="btn btn-sm btn-outline-secondary" style="border-radius:8px;" onclick="changePage(' + (currentPage+1) + ', \'' + tbodyId + '\')" ' + (currentPage===totalPages?'disabled':'') + '>ถัดไป ›</button>';
+        html += '<span style="font-size:0.82rem; color:#64748b; margin-left:4px;">รวม ' + total + ' รายการ</span>';
+        paginator.innerHTML = html;
+        var tbody = document.getElementById(tbodyId);
+        if (tbody && tbody.parentElement && tbody.parentElement.parentElement) {
+            tbody.parentElement.parentElement.parentElement.appendChild(paginator);
+        }
+    }
+
+    function changePage(page, tbodyId) {
+        var totalData = globalAdminData.length;
+        var totalPages = Math.ceil(totalData / PAGE_SIZE);
+        if (page < 1 || page > totalPages) return;
+        currentPage = page;
+        renderTable(globalAdminData, 'admin-tbody', true);
+    }
+
+    // ===== ACTIVITY LOG =====
+    var globalLogData = [];
+
+    function loadActivityLog() {
+        document.getElementById('log-tbody').innerHTML = '<tr><td colspan="6" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>';
+        callGAS("getActivityLog", null, function(data) {
+            globalLogData = data || [];
+            filterLog();
+        });
+    }
+
+    function filterLog() {
+        var cat = document.getElementById('log-filter-cat').value;
+        var filtered = cat ? globalLogData.filter(function(d) { return (d[4]||'') === cat; }) : globalLogData;
+        var tbody = document.getElementById('log-tbody');
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">ไม่พบข้อมูล</td></tr>';
+            return;
+        }
+        var catColor = { 'สมุดจดคิว':'primary', 'ใบอนุญาต':'success' };
+        var html = '';
+        filtered.forEach(function(d, i) {
+            var cc = catColor[d[4]] || 'secondary';
+            html += '<tr>';
+            html += '<td class="text-center text-muted">' + (i+1) + '</td>';
+            html += '<td style="white-space:nowrap;">' + (d[0]||'-') + '</td>';
+            html += '<td><span class="badge bg-dark">' + (d[1]||'-') + '</span></td>';
+            html += '<td><b>' + (d[2]||'-') + '</b></td>';
+            html += '<td style="font-size:0.82rem; color:#475569;">' + (d[3]||'-') + '</td>';
+            html += '<td><span class="badge bg-' + cc + '">' + (d[4]||'-') + '</span></td>';
+            html += '</tr>';
+        });
+        tbody.innerHTML = html;
     }
 
     function switchSidebar(sectionId, el) {
@@ -659,11 +967,12 @@
         currentSection = sectionId;
     }
 
-    // ===== LOAD DATA =====
+    // ===== LOAD DATA (Pet) =====
     function loadData() {
         document.getElementById("admin-tbody").innerHTML = '<tr><td colspan="7" class="text-center py-4"><div class="spinner-border text-primary"></div> กำลังดึงข้อมูล...</td></tr>';
         callGAS("getAdminData", null, function(data) {
             globalAdminData = data;
+            currentPage = 1;
             renderTable(data, 'admin-tbody', true);
             renderFiltered();
             updateStats();
@@ -747,6 +1056,7 @@
         var filtered = globalAdminData.filter(function(row) {
             return row.some(function(cell) { return cell.toString().toLowerCase().includes(keyword); });
         });
+        currentPage = 1;
         renderTable(filtered, 'admin-tbody', true);
     }
 
@@ -766,6 +1076,16 @@
             }
         });
     })();
+
+    function setTodayIssue() {
+        var now = new Date();
+        var day   = now.getDate();
+        var month = now.getMonth() + 1;
+        var year  = now.getFullYear() + 543; // แปลงเป็น พ.ศ.
+        document.getElementById('lf-issue-day').value   = day < 10 ? '0'+day : ''+day;
+        document.getElementById('lf-issue-month').value = month < 10 ? '0'+month : ''+month;
+        document.getElementById('lf-issue-year').value  = year;
+    }
 
     function getDateStr(dayId, monthId, yearId) {
         var d = document.getElementById(dayId).value;
@@ -797,7 +1117,74 @@
             globalLicenseData = data || [];
             renderLicenseTable(globalLicenseData);
             renderLicenseSubSections();
+            loadLicenseDashboard();
         });
+    }
+
+    function loadLicenseDashboard() {
+        var data = globalLicenseData;
+        var total = data.length;
+        var pending = 0, reviewing = 0, approved = 0, notPickup = 0, expired = 0;
+        var expiringSoon = [];
+        var today = new Date();
+
+        data.forEach(function(d) {
+            var s = d[5] || '';
+            if (s === 'รอดำเนินการ') pending++;
+            else if (s === 'อยู่ระหว่างพิจารณา') reviewing++;
+            else if (s === 'อนุมัติแล้ว') {
+                approved++;
+                if ((d[10]||'') !== 'มารับใบอนุญาตแล้ว') notPickup++;
+            }
+            else if (s === 'หมดอายุ') expired++;
+
+            var expireStr = d[7] || '';
+            if (expireStr && expireStr.indexOf('/') !== -1) {
+                var parts = expireStr.split('/');
+                if (parts.length === 3) {
+                    var yearNum  = parseInt(parts[2]);
+                    var expYear  = yearNum > 2500 ? yearNum - 543 : yearNum;
+                    var expDate  = new Date(expYear, parseInt(parts[1])-1, parseInt(parts[0]));
+                    var diffDays = Math.ceil((expDate - today) / (1000*60*60*24));
+                    if (diffDays >= 0 && diffDays <= 90) expiringSoon.push({ data: d, days: diffDays });
+                }
+            }
+        });
+
+        document.getElementById('db-lic-total').innerText     = total;
+        document.getElementById('db-lic-pending').innerText   = pending;
+        document.getElementById('db-lic-reviewing').innerText = reviewing;
+        document.getElementById('db-lic-approved').innerText  = approved;
+        document.getElementById('db-lic-not-pickup').innerText= notPickup;
+        document.getElementById('db-lic-expired').innerText   = expired;
+
+        expiringSoon.sort(function(a,b) { return a.days - b.days; });
+        var tbody = document.getElementById('db-expiring-tbody');
+        if (expiringSoon.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-3 text-muted"><i class="fas fa-check-circle text-success me-2"></i>ไม่มีใบอนุญาตที่จะหมดอายุใน 90 วัน</td></tr>';
+            return;
+        }
+        var html = '';
+        expiringSoon.forEach(function(item, i) {
+            var d = item.data;
+            var fullName = ((d[0]||'')+(d[1]||'')+' '+(d[2]||'')).trim();
+            var pickup = d[10] || 'ยังไม่ได้มารับ';
+            var sColor = { 'อนุมัติแล้ว':'success','รอดำเนินการ':'warning','อยู่ระหว่างพิจารณา':'primary','ไม่อนุมัติ':'danger','หมดอายุ':'secondary' };
+            var pickupBadge = pickup === 'มารับใบอนุญาตแล้ว'
+                ? '<span class="badge bg-success">มารับแล้ว</span>'
+                : '<span class="badge bg-warning text-dark">ยังไม่มารับ</span>';
+            var urgency = item.days <= 30
+                ? '<span class="badge bg-danger ms-2">เหลือ ' + item.days + ' วัน</span>'
+                : '<span class="badge bg-warning text-dark ms-2">เหลือ ' + item.days + ' วัน</span>';
+            var statusBadge = '<span class="badge bg-' + (sColor[d[5]]||'secondary') + '">' + (d[5]||'-') + '</span>';
+            html += '<tr><td class="text-center text-muted fw-bold">' + (i+1) + '</td>';
+            html += '<td>' + fullName + '</td><td>' + (d[3]||'-') + '</td>';
+            html += '<td style="font-size:0.82rem;">' + (d[4]||'-') + '</td>';
+            html += '<td>' + (d[7]||'-') + urgency + '</td>';
+            html += '<td>' + statusBadge + '</td>';
+            html += '<td>' + pickupBadge + '</td></tr>';
+        });
+        tbody.innerHTML = html;
     }
 
     function renderLicenseSubSections() {
@@ -984,7 +1371,7 @@
         }).then(function(result) {
             if (result.isConfirmed) {
                 Swal.fire({ title: 'กำลังลบ...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-                callGAS("deleteLicense", { rowNumber: rowNum }, function(res) {
+                callGAS("deleteLicense", { rowNumber: rowNum, username: currentUser }, function(res) {
                     if (res.success) {
                         Swal.fire({ icon: 'success', title: 'ลบสำเร็จ!', timer: 1200, showConfirmButton: false });
                         loadLicenseData();
@@ -1003,7 +1390,7 @@
             if(newDate === null) return;
         }
         Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-        callGAS("updateDataStatus", { rowNumber: rowNumber, newStatus: newStatus, newDate: newDate }, function(res) {
+        callGAS("updateDataStatus", { rowNumber: rowNumber, newStatus: newStatus, newDate: newDate, username: currentUser }, function(res) {
             if(res.success) {
                 Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ!', timer: 1500, showConfirmButton: false });
                 loadData();

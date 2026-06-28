@@ -153,9 +153,18 @@
                             <span class="status-dot dot-cancelled"></span> ยกเลิก / นอกเขตพื้นที่
                         </a>
                         <div class="sidebar-heading mt-4">สำหรับประชาชน</div>
-                        <a class="nav-link sidebar-menu-btn" href="javascript:void(0);" onclick="switchTab('steps', this)" style="background: linear-gradient(135deg, #10b981, #059669) !important; color: white !important; border-radius: 12px !important; margin: 10px 15px 15px 15px !important; padding: 12px !important; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3) !important; display: flex !important; flex-direction: column !important; align-items: center !important; text-align: center !important; border-left: none !important; transition: transform 0.2s;">
-                            <div style="font-size: 1.15rem; font-weight: 700;"><i class="fas fa-paw" style="color: #fef08a; margin-right: 5px;"></i> ลงทะเบียนทำหมัน</div>
-                            <div style="font-size: 0.8rem; font-weight: 400; opacity: 0.9; margin-top: 3px;">สุนัขและแมว (ออนไลน์)</div>
+                        <a class="nav-link" href="javascript:void(0);" onclick="switchTab('steps', this)"
+                           style="display:flex; align-items:center; gap:10px; margin:8px 12px 12px; padding:10px 14px; background:linear-gradient(135deg, #10b981, #059669); color:white; border-radius:10px; box-shadow:0 3px 10px rgba(16,185,129,0.35); text-decoration:none; border-left:none; transition:transform 0.15s, box-shadow 0.15s;"
+                           onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 5px 15px rgba(16,185,129,0.45)';"
+                           onmouseout="this.style.transform=''; this.style.boxShadow='0 3px 10px rgba(16,185,129,0.35)';">
+                            <div style="width:34px; height:34px; border-radius:8px; background:rgba(255,255,255,0.2); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                <i class="fas fa-paw" style="font-size:1rem; color:#fef08a;"></i>
+                            </div>
+                            <div>
+                                <div style="font-size:0.92rem; font-weight:700; line-height:1.2;">ลงทะเบียนทำหมัน</div>
+                                <div style="font-size:0.75rem; opacity:0.88; margin-top:1px;">สุนัขและแมว (ออนไลน์)</div>
+                            </div>
+                            <i class="fas fa-chevron-right" style="margin-left:auto; font-size:0.7rem; opacity:0.7;"></i>
                         </a>
                         <div class="sidebar-heading">เมนูข้อมูลอื่นๆ</div>
                         <a class="nav-link sidebar-menu-btn" href="javascript:void(0);" onclick="switchTab('faq', this)">
@@ -569,6 +578,7 @@
           var currentStatusFilter = 'ทั้งหมด';
 
           function switchProject(projectName) {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
               var links = document.querySelectorAll('.top-nav-link');
               links.forEach(l => l.classList.remove('active'));
               if(typeof event !== 'undefined' && event && event.currentTarget) {
