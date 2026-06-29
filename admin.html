@@ -3,16 +3,24 @@
 <head>
     <base target="_top">
     <title>Admin Panel - ระบบหลังบ้าน</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 
     <script>
       var GAS_URL    = "https://script.google.com/macros/s/AKfycbyn5PE7PgLcAUvzMqvkM6pDY3sRrWH7wjKO7gY1E-Vld5qCL_wIzmCUoht1b3BCZAVD/exec";
       var GAS_SECRET = "Jt9mK2pQ8xL5wRnB7cYeXvD3sAhF6gZq";
       function callGAS(action, data, successHandler, failureHandler) {
         var body = { secret: GAS_SECRET, action: action };
-        if (data) body.data = data;
+        // ส่ง data เสมอ พร้อม username สำหรับ server-side role check
+        var payload = data ? JSON.parse(JSON.stringify(data)) : {};
+        if (typeof currentUser !== 'undefined' && currentUser && !payload.username) {
+          payload.username = currentUser;
+        }
+        body.data = payload;
         fetch(GAS_URL, { method: "POST", body: JSON.stringify(body) })
           .then(function(res) { return res.json(); })
           .then(function(result) { if(successHandler) successHandler(result); })
@@ -195,6 +203,9 @@
                 <a class="sidebar-link" onclick="switchSidebar('license-expired', this)">
                     <span class="icon"><i class="fas fa-calendar-times"></i></span> หมดอายุ
                 </a>
+                <a class="sidebar-link" onclick="switchSidebar('license-map', this); setTimeout(initOverviewMap, 100);">
+                    <span class="icon"><i class="fas fa-map-marked-alt" style="color:#0369a1;"></i></span> แผนที่รวม
+                </a>
             </div>
 
             <!-- เมนู: ตั้งค่า -->
@@ -256,6 +267,7 @@
                     <input type="text" id="admin-search" class="form-control" placeholder="🔍  ค้นหาชื่อ หรือเบอร์โทร..." oninput="filterTable()" style="border-radius:10px;">
                 </div>
 
+                <div id="admin-tbody-paginator" class="d-flex justify-content-center align-items-center gap-2 py-2 flex-wrap"></div>
                 <div class="table-wrapper table-responsive">
                     <table class="table table-hover mb-0" id="admin-table">
                         <thead>
@@ -274,7 +286,7 @@
                         </tbody>
                     </table>
                 </div>
-                <div id="admin-tbody-paginator" class="d-flex justify-content-center align-items-center gap-2 py-3 flex-wrap"></div>
+                <div id="admin-tbody-paginator-bottom" class="d-flex justify-content-center align-items-center gap-2 py-2 flex-wrap"></div>
             </div>
 
             <!-- ===== SECTION: PET SCHEDULED ===== -->
@@ -489,12 +501,31 @@
                                 <input type="number" id="lf-expire-year" class="form-control" placeholder="ปี พ.ศ." min="2560" max="2610" style="width:110px; flex-shrink:0;">
                             </div>
                         </div>
-                        <div class="col-12 col-md-12">
+                        <div class="col-12 col-md-6">
                             <label class="form-label fw-bold" style="font-size:0.88rem;">สถานะรับใบอนุญาต</label>
                             <select id="lf-pickup" class="form-select">
                                 <option>ยังไม่ได้มารับใบอนุญาต</option>
                                 <option>มารับใบอนุญาตแล้ว</option>
                             </select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-bold" style="font-size:0.88rem;">
+                                <i class="fas fa-map-marker-alt text-danger me-1"></i>พิกัด GPS (ไม่บังคับ)
+                            </label>
+                            <div class="d-flex gap-2 mb-2">
+                                <input type="text" id="lf-lat" class="form-control" placeholder="Latitude เช่น 12.5678" style="font-size:0.9rem;" oninput="syncPickerFromInput()">
+                                <input type="text" id="lf-lng" class="form-control" placeholder="Longitude เช่น 102.1234" style="font-size:0.9rem;" oninput="syncPickerFromInput()">
+                            </div>
+                            <button type="button" class="btn btn-outline-primary btn-sm w-100" onclick="togglePickerMap()" style="border-radius:8px; font-size:0.82rem;">
+                                <i class="fas fa-map me-1"></i><span id="picker-map-btn-text">📍 กดเพื่อเลือกตำแหน่งบนแผนที่</span>
+                            </button>
+                            <!-- Map Picker -->
+                            <div id="picker-map-wrap" style="display:none; margin-top:10px;">
+                                <div style="font-size:0.78rem; color:#0369a1; margin-bottom:6px; padding:6px 10px; background:#eff6ff; border-radius:6px;">
+                                    <i class="fas fa-hand-pointer me-1"></i>กดบนแผนที่เพื่อปักหมุดตำแหน่งร้าน — ค่า Lat/Lng จะถูก fill อัตโนมัติ
+                                </div>
+                                <div id="picker-map" style="height:300px; border-radius:10px; border:2px solid #0369a1;"></div>
+                            </div>
                         </div>
                     </div>
                     <div class="d-flex gap-2 mt-3">
@@ -531,6 +562,9 @@
                     </div>
                 </div>
 
+                <!-- paginator บน -->
+                <div id="license-tbody-paginator" class="d-flex justify-content-center align-items-center gap-2 py-2 flex-wrap"></div>
+
                 <!-- ตาราง -->
                 <div class="table-wrapper table-responsive">
                     <table class="table table-hover mb-0">
@@ -552,7 +586,7 @@
                         </tbody>
                     </table>
                 </div>
-                <div id="license-tbody-paginator" class="d-flex justify-content-center align-items-center gap-2 py-3 flex-wrap"></div>
+                <div id="license-tbody-paginator-bottom" class="d-flex justify-content-center align-items-center gap-2 py-2 flex-wrap"></div>
             </div>
             <!-- ===== SECTION: LICENSE EXPIRING ===== -->
             <div id="section-license-expiring" class="page-section">
@@ -632,6 +666,36 @@
                 </div>
             </div>
 
+            <!-- ===== SECTION: LICENSE MAP ===== -->
+            <div id="section-license-map" class="page-section">
+                <h5 style="color:#0f2c59;font-weight:700;" class="mb-1"><i class="fas fa-map-marked-alt text-primary me-2"></i>แผนที่รวมสถานประกอบการ</h5>
+                <p class="text-muted mb-3" style="font-size:0.85rem;">แสดงตำแหน่งร้านทุกร้านที่มีข้อมูลพิกัด GPS — กดที่หมุดเพื่อดูรายละเอียด</p>
+
+                <!-- Legend -->
+                <div class="content-card p-3 mb-3" style="border-radius:12px;">
+                    <div class="d-flex flex-wrap gap-3 align-items-center" style="font-size:0.82rem;">
+                        <span style="font-weight:600; color:#475569;">สถานะ:</span>
+                        <span><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#16a34a;vertical-align:middle;margin-right:4px;"></span>อนุมัติแล้ว</span>
+                        <span><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#f59e0b;vertical-align:middle;margin-right:4px;"></span>รอดำเนินการ</span>
+                        <span><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#3b82f6;vertical-align:middle;margin-right:4px;"></span>อยู่ระหว่างพิจารณา</span>
+                        <span><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#dc2626;vertical-align:middle;margin-right:4px;"></span>ไม่อนุมัติ</span>
+                        <span><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#94a3b8;vertical-align:middle;margin-right:4px;"></span>หมดอายุ</span>
+                        <span id="overview-map-count" class="ms-auto" style="color:#0369a1;font-weight:600;"></span>
+                    </div>
+                </div>
+
+                <!-- Map -->
+                <div class="content-card p-2" style="border-radius:12px; position:relative;">
+                    <div id="overview-map" style="height:560px; border-radius:10px;"></div>
+                    <!-- [I4 fix] Placeholder แสดงเมื่อไม่มีข้อมูล GPS -->
+                    <div id="overview-map-no-gps" style="display:none; position:absolute; inset:8px; border-radius:10px; background:rgba(241,245,249,0.92); flex-direction:column; align-items:center; justify-content:center; z-index:500; gap:10px; pointer-events:none;">
+                        <i class="fas fa-map-marked-alt fa-3x" style="color:#cbd5e1;"></i>
+                        <p style="color:#64748b; font-weight:600; margin:0; font-size:1rem;">ยังไม่มีข้อมูลพิกัด GPS</p>
+                        <p style="color:#94a3b8; margin:0; font-size:0.85rem; text-align:center;">กรุณาเพิ่ม Lat/Lng ในแต่ละรายการใบอนุญาต<br>แล้วกดปุ่มรีเฟรช</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- ===== SECTION: SETTINGS ===== -->
             <div id="section-settings-banner" class="page-section">
                 <h5 style="color:#0f2c59;font-weight:700;" class="mb-3">จัดการประกาศ (Banner)</h5>
@@ -677,7 +741,7 @@
                         <span class="dev-badge">แก้ใน Sheets</span>
                     </div>
                     <div class="setting-row">
-                        <div><div class="setting-label">Password</div><div class="setting-desc">คอลัมน์ F → รหัสผ่าน (ต้อง Format เป็น Plain Text)</div></div>
+                        <div><div class="setting-label">Password</div><div class="setting-desc">คอลัมน์ F → รหัสผ่านที่เข้ารหัสด้วย SHA-256 (ไม่ใช่รหัสผ่านตัวอักษรธรรมดา)</div></div>
                         <span class="dev-badge">แก้ใน Sheets</span>
                     </div>
                     <div class="setting-row">
@@ -734,10 +798,54 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
+<!-- ===== MAP MODAL ===== -->
+<div class="modal fade" id="mapModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px; overflow:hidden;">
+            <div class="modal-header" style="background:#0f2c59; color:white; border:none; padding:16px 20px;">
+                <div>
+                    <h5 class="modal-title mb-0" id="map-modal-title">แผนที่สถานประกอบการ</h5>
+                    <small id="map-modal-subtitle" style="opacity:0.75;"></small>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0" id="map-modal-body">
+                <div id="map-loading" class="text-center py-5">
+                    <div class="spinner-border text-primary mb-2"></div>
+                    <p class="text-muted">กำลังโหลดแผนที่...</p>
+                </div>
+                <iframe id="map-iframe" width="100%" height="420" frameborder="0" style="display:none; border:none;" allowfullscreen></iframe>
+                <div id="map-no-gps" class="text-center py-5 d-none">
+                    <i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i>
+                    <h6 style="color:#64748b;">ยังไม่มีข้อมูลพิกัด GPS</h6>
+                    <p class="text-muted mb-3" style="font-size:0.9rem;">กดปุ่มแก้ไขเพื่อเพิ่มพิกัด Latitude / Longitude</p>
+                    <a id="map-search-link" href="#" target="_blank" class="btn btn-outline-primary btn-sm" style="border-radius:8px;">
+                        <i class="fas fa-search me-1"></i>ค้นหาชื่อร้านใน Google Maps แทน
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer" style="border:none; padding:12px 20px; background:#f8fafc;" id="map-footer">
+                <a id="map-open-btn" href="#" target="_blank" class="btn btn-success btn-sm" style="border-radius:8px;">
+                    <i class="fas fa-external-link-alt me-1"></i>เปิดใน Google Maps
+                </a>
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal" style="border-radius:8px;">ปิด</button>
+            </div>
+        </div>
+    </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
+    // ฟังก์ชัน escape HTML ป้องกัน XSS — ใช้ครอบข้อมูลจาก user ทุกครั้งก่อนใส่ innerHTML
+    function esc(str) {
+        return String(str == null ? '' : str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     var globalAdminData = [];
     var currentSection = 'pet-queue';
     var currentRole = '';
@@ -781,10 +889,15 @@
         }, SESSION_TIMEOUT);
     }
 
-    // reset timer ทุกครั้งที่มีการโต้ตอบ
+    // [P1 fix] reset timer ทุกครั้งที่มีการโต้ตอบ — มี debounce กัน mousemove ยิงถี่เกินไป
+    var _sessionThrottle = false;
     ['click','keydown','mousemove','scroll'].forEach(function(evt) {
         document.addEventListener(evt, function() {
-            if (currentUser) resetSessionTimer();
+            if (!currentUser) return;
+            if (_sessionThrottle) return; // ถ้า reset เพิ่งทำงานไปใน 500ms นี้ ข้ามไปก่อน
+            _sessionThrottle = true;
+            setTimeout(function() { _sessionThrottle = false; }, 500);
+            resetSessionTimer();
         }, { passive: true });
     });
 
@@ -916,11 +1029,11 @@
         for (var i = 0; i < pageData.length; i++) {
             var row = pageData[i];
             var prefix = row[1] ? row[1].toString().trim() : "";
-            var name = prefix + (row[2] ? row[2].toString().trim() : "");
+            var name = esc(prefix + (row[2] ? row[2].toString().trim() : ""));
             var status = row[3] ? row[3].toString().trim() : "รอตรวจสอบ";
-            var date = row[4] ? row[4].toString().trim() : "-";
-            var phone = row[5] ? row[5].toString() : "";
-            var petType = (row[8] ? row[8].toString() : "สัตว์มีเจ้าของ") + " (" + (row[9] ? row[9] : "0") + " ตัว)";
+            var date = esc(row[4] ? row[4].toString().trim() : "-");
+            var phone = esc(row[5] ? row[5].toString() : "");
+            var petType = esc((row[8] ? row[8].toString() : "สัตว์มีเจ้าของ") + " (" + (row[9] ? row[9] : "0") + " ตัว)");
             var rowNumber = row[row.length - 1];
             var trClass = "", badgeClass = "bg-secondary";
             if (status === "นัดหมายคิวแล้ว") { badgeClass = "bg-success"; trClass = "row-success"; }
@@ -930,13 +1043,13 @@
             html += '<tr class="' + trClass + '">';
             html += '<td class="text-center fw-bold text-muted">' + (start + i + 1) + '</td>';
             if (showDate) {
-                html += '<td><span class="badge ' + badgeClass + '">' + status + '</span></td>';
+                html += '<td><span class="badge ' + badgeClass + '">' + esc(status) + '</span></td>';
                 html += '<td class="text-danger fw-bold">' + date + '</td>';
                 html += '<td>' + name + '</td>';
             } else {
                 html += '<td>' + name + '</td>';
                 if (tbodyId === 'tbody-scheduled') html += '<td class="text-danger fw-bold">' + date + '</td>';
-                else html += '<td><span class="badge ' + badgeClass + '">' + status + '</span></td>';
+                else html += '<td><span class="badge ' + badgeClass + '">' + esc(status) + '</span></td>';
             }
             html += '<td>' + phone + '</td>';
             html += '<td>' + petType + '</td>';
@@ -950,26 +1063,32 @@
         renderPagination(dataArray.length, tbodyId);
     }
 
-    function renderPagination(total, tbodyId, dataArray, showDate) {
-        var paginId = tbodyId + '-paginator';
-        var paginator = document.getElementById(paginId);
-        if (!paginator) return;
-        if (total <= PAGE_SIZE) { paginator.innerHTML = ''; return; }
-        var totalPages = Math.ceil(total / PAGE_SIZE);
-        var html = '';
-        html += '<button class="btn btn-sm btn-outline-secondary" style="border-radius:8px;" onclick="changePage(' + (currentPage-1) + ', \'' + tbodyId + '\')" ' + (currentPage===1?'disabled':'') + '>‹ ก่อนหน้า</button>';
-        // แสดงแค่ปุ่มหน้าที่อยู่ใกล้ๆ
-        var startP = Math.max(1, currentPage-2);
-        var endP = Math.min(totalPages, currentPage+2);
-        if (startP > 1) html += '<span class="text-muted px-1">...</span>';
-        for (var p = startP; p <= endP; p++) {
-            var active = p === currentPage ? 'btn-primary' : 'btn-outline-primary';
-            html += '<button class="btn btn-sm ' + active + '" style="border-radius:8px; min-width:36px;" onclick="changePage(' + p + ', \'' + tbodyId + '\')">' + p + '</button>';
+    function renderPagination(total, tbodyId) {
+        var paginHtml = '';
+        if (total <= PAGE_SIZE) {
+            var p1 = document.getElementById(tbodyId + '-paginator');
+            var p2 = document.getElementById(tbodyId + '-paginator-bottom');
+            if (p1) p1.innerHTML = '';
+            if (p2) p2.innerHTML = '';
+            return;
         }
-        if (endP < totalPages) html += '<span class="text-muted px-1">...</span>';
-        html += '<button class="btn btn-sm btn-outline-secondary" style="border-radius:8px;" onclick="changePage(' + (currentPage+1) + ', \'' + tbodyId + '\')" ' + (currentPage===totalPages?'disabled':'') + '>ถัดไป ›</button>';
-        html += '<span style="font-size:0.82rem; color:#64748b; margin-left:4px;">หน้า ' + currentPage + '/' + totalPages + ' (รวม ' + total + ' รายการ)</span>';
-        paginator.innerHTML = html;
+        var activePage = tbodyId === 'license-tbody' ? currentPageLicense : currentPage;
+        var totalPages = Math.ceil(total / PAGE_SIZE);
+        paginHtml += '<button class="btn btn-sm btn-outline-secondary" style="border-radius:8px;" onclick="changePage(' + (activePage-1) + ', \'' + tbodyId + '\')" ' + (activePage===1?'disabled':'') + '>‹ ก่อนหน้า</button>';
+        var startP = Math.max(1, activePage-2);
+        var endP   = Math.min(totalPages, activePage+2);
+        if (startP > 1) paginHtml += '<button class="btn btn-sm btn-outline-primary" style="border-radius:8px; min-width:36px;" onclick="changePage(1, \'' + tbodyId + '\')">1</button><span class="text-muted px-1">...</span>';
+        for (var p = startP; p <= endP; p++) {
+            var active = p === activePage ? 'btn-primary' : 'btn-outline-primary';
+            paginHtml += '<button class="btn btn-sm ' + active + '" style="border-radius:8px; min-width:36px;" onclick="changePage(' + p + ', \'' + tbodyId + '\')">' + p + '</button>';
+        }
+        if (endP < totalPages) paginHtml += '<span class="text-muted px-1">...</span><button class="btn btn-sm btn-outline-primary" style="border-radius:8px; min-width:36px;" onclick="changePage(' + totalPages + ', \'' + tbodyId + '\')">' + totalPages + '</button>';
+        paginHtml += '<button class="btn btn-sm btn-outline-secondary" style="border-radius:8px;" onclick="changePage(' + (activePage+1) + ', \'' + tbodyId + '\')" ' + (activePage===totalPages?'disabled':'') + '>ถัดไป ›</button>';
+        paginHtml += '<span style="font-size:0.82rem; color:#64748b; margin-left:4px;">หน้า ' + activePage + '/' + totalPages + ' (รวม ' + total + ' รายการ)</span>';
+        var p1 = document.getElementById(tbodyId + '-paginator');
+        var p2 = document.getElementById(tbodyId + '-paginator-bottom');
+        if (p1) p1.innerHTML = paginHtml;
+        if (p2) p2.innerHTML = paginHtml;
     }
 
     // currentPageLicense แยกจาก currentPage ของทำหมัน
@@ -995,7 +1114,13 @@
     function loadActivityLog() {
         document.getElementById('log-tbody').innerHTML = '<tr><td colspan="6" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>';
         callGAS("getActivityLog", null, function(data) {
-            globalLogData = data || [];
+            // Issue 5 fix: ตรวจสอบว่า data เป็น Array ก่อนใช้งาน
+            if (!Array.isArray(data)) {
+                var errMsg = (data && data.error) ? data.error : 'ไม่สามารถดึงข้อมูล Activity Log ได้';
+                document.getElementById('log-tbody').innerHTML = '<tr><td colspan="6" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>' + esc(errMsg) + '</td></tr>';
+                return;
+            }
+            globalLogData = data;
             filterLog();
         });
     }
@@ -1014,11 +1139,11 @@
             var cc = catColor[d[4]] || 'secondary';
             html += '<tr>';
             html += '<td class="text-center text-muted">' + (i+1) + '</td>';
-            html += '<td style="white-space:nowrap;">' + (d[0]||'-') + '</td>';
-            html += '<td><span class="badge bg-dark">' + (d[1]||'-') + '</span></td>';
-            html += '<td><b>' + (d[2]||'-') + '</b></td>';
-            html += '<td style="font-size:0.82rem; color:#475569;">' + (d[3]||'-') + '</td>';
-            html += '<td><span class="badge bg-' + cc + '">' + (d[4]||'-') + '</span></td>';
+            html += '<td style="white-space:nowrap;">' + esc(d[0]||'-') + '</td>';
+            html += '<td><span class="badge bg-dark">' + esc(d[1]||'-') + '</span></td>';
+            html += '<td><b>' + esc(d[2]||'-') + '</b></td>';
+            html += '<td style="font-size:0.82rem; color:#475569;">' + esc(d[3]||'-') + '</td>';
+            html += '<td><span class="badge bg-' + cc + '">' + esc(d[4]||'-') + '</span></td>';
             html += '</tr>';
         });
         tbody.innerHTML = html;
@@ -1037,6 +1162,12 @@
     function loadData() {
         document.getElementById("admin-tbody").innerHTML = '<tr><td colspan="7" class="text-center py-4"><div class="spinner-border text-primary"></div> กำลังดึงข้อมูล...</td></tr>';
         callGAS("getAdminData", null, function(data) {
+            // Issue 5 fix: ตรวจสอบว่า data เป็น Array ก่อนใช้งาน
+            if (!Array.isArray(data)) {
+                var errMsg = (data && data.error) ? data.error : 'ไม่สามารถดึงข้อมูลสมุดจดคิวได้';
+                document.getElementById("admin-tbody").innerHTML = '<tr><td colspan="7" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>' + esc(errMsg) + '</td></tr>';
+                return;
+            }
             globalAdminData = data;
             currentPage = 1;
             renderTable(data, 'admin-tbody', true);
@@ -1070,12 +1201,13 @@
             var s = r[3] ? r[3].toString().trim() : "";
             return s.includes("ยกเลิก") || s.includes("นอกเขตพื้นที่") || s.includes("ไม่มาตามนัด");
         });
-        renderTable(scheduled, 'tbody-scheduled', false);
-        renderTable(pending, 'tbody-pending', false);
-        renderTable(cancelled, 'tbody-cancelled', false);
+        renderSimpleTable(scheduled, 'tbody-scheduled', false);
+        renderSimpleTable(pending, 'tbody-pending', false);
+        renderSimpleTable(cancelled, 'tbody-cancelled', false);
     }
 
-    function renderTable(dataArray, tbodyId, showDate) {
+    // renderSimpleTable — ใช้กับตาราง sub (scheduled, pending, cancelled) ไม่มี pagination
+    function renderSimpleTable(dataArray, tbodyId, showDate) {
         var tbody = document.getElementById(tbodyId);
         if(!tbody) return;
         if(dataArray.length === 0) { tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">ไม่พบข้อมูล</td></tr>'; return; }
@@ -1083,11 +1215,11 @@
         for(var i=0; i<dataArray.length; i++) {
             var row = dataArray[i];
             var prefix = row[1] ? row[1].toString().trim() : "";
-            var name = prefix + (row[2] ? row[2].toString().trim() : "");
+            var name = esc(prefix + (row[2] ? row[2].toString().trim() : ""));
             var status = row[3] ? row[3].toString().trim() : "รอตรวจสอบ";
-            var date = row[4] ? row[4].toString().trim() : "-";
-            var phone = row[5] ? row[5].toString() : "";
-            var petType = (row[8] ? row[8].toString() : "สัตว์มีเจ้าของ") + " (" + (row[9] ? row[9] : "0") + " ตัว)";
+            var date = esc(row[4] ? row[4].toString().trim() : "-");
+            var phone = esc(row[5] ? row[5].toString() : "");
+            var petType = esc((row[8] ? row[8].toString() : "สัตว์มีเจ้าของ") + " (" + (row[9] ? row[9] : "0") + " ตัว)");
             var rowNumber = row[row.length - 1];
             var trClass = "";
             var badgeClass = "bg-secondary";
@@ -1098,13 +1230,13 @@
             html += '<tr class="' + trClass + '">';
             html += '<td class="text-center fw-bold text-muted">' + (i + 1) + '</td>';
             if(showDate) {
-                html += '<td><span class="badge ' + badgeClass + '">' + status + '</span></td>';
+                html += '<td><span class="badge ' + badgeClass + '">' + esc(status) + '</span></td>';
                 html += '<td class="text-danger fw-bold">' + date + '</td>';
                 html += '<td>' + name + '</td>';
             } else {
                 html += '<td>' + name + '</td>';
                 if(tbodyId === 'tbody-scheduled') html += '<td class="text-danger fw-bold">' + date + '</td>';
-                else html += '<td><span class="badge ' + badgeClass + '">' + status + '</span></td>';
+                else html += '<td><span class="badge ' + badgeClass + '">' + esc(status) + '</span></td>';
             }
             html += '<td>' + phone + '</td>';
             html += '<td>' + petType + '</td>';
@@ -1128,6 +1260,12 @@
 
     // ===== LICENSE SYSTEM =====
     var globalLicenseData = [];
+    var licensePageData    = [];   // Issue 3 fix: เก็บ data ของหน้าปัจจุบันใน renderLicenseTable
+    // [B1 fix] แยก global สำหรับแต่ละ sub-table ป้องกันการเขียนทับกัน
+    var subDataPending   = [];
+    var subDataApproved  = [];
+    var subDataNotPickup = [];
+    var subDataExpired   = [];
 
     // สร้าง dropdown วัน 1-31
     (function() {
@@ -1180,7 +1318,13 @@
     function loadLicenseData() {
         document.getElementById('license-tbody').innerHTML = '<tr><td colspan="9" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>';
         callGAS("getLicenseData", null, function(data) {
-            globalLicenseData = data || [];
+            // Issue 5 fix: ตรวจสอบว่า data เป็น Array ก่อนใช้งาน
+            if (!Array.isArray(data)) {
+                var errMsg = (data && data.error) ? data.error : 'ไม่สามารถดึงข้อมูลใบอนุญาตได้';
+                document.getElementById('license-tbody').innerHTML = '<tr><td colspan="9" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>' + esc(errMsg) + '</td></tr>';
+                return;
+            }
+            globalLicenseData = data;
             renderLicenseTable(globalLicenseData);
             renderLicenseSubSections();
             loadLicenseDashboard();
@@ -1244,9 +1388,9 @@
                 : '<span class="badge bg-warning text-dark ms-2">เหลือ ' + item.days + ' วัน</span>';
             var statusBadge = '<span class="badge bg-' + (sColor[d[5]]||'secondary') + '">' + (d[5]||'-') + '</span>';
             html += '<tr><td class="text-center text-muted fw-bold">' + (i+1) + '</td>';
-            html += '<td>' + fullName + '</td><td>' + (d[3]||'-') + '</td>';
-            html += '<td style="font-size:0.82rem;">' + (d[4]||'-') + '</td>';
-            html += '<td>' + (d[7]||'-') + urgency + '</td>';
+            html += '<td>' + esc(fullName) + '</td><td>' + esc(d[3]||'-') + '</td>';
+            html += '<td style="font-size:0.82rem;">' + esc(d[4]||'-') + '</td>';
+            html += '<td>' + esc(d[7]||'-') + urgency + '</td>';
             html += '<td>' + statusBadge + '</td>';
             html += '<td>' + pickupBadge + '</td></tr>';
         });
@@ -1254,17 +1398,18 @@
     }
 
     function renderLicenseSubSections() {
-        var pending   = globalLicenseData.filter(function(d) { return d[5]==='รอดำเนินการ' || d[5]==='อยู่ระหว่างพิจารณา'; });
-        var approved  = globalLicenseData.filter(function(d) { return d[5]==='อนุมัติแล้ว'; });
-        var notPickup = globalLicenseData.filter(function(d) { return d[5]==='อนุมัติแล้ว' && (d[10]||'') !== 'มารับใบอนุญาตแล้ว'; });
-        var expired   = globalLicenseData.filter(function(d) { return d[5]==='หมดอายุ'; });
-        renderLicenseSubTable(pending,   'tbody-license-pending');
-        renderLicenseSubTable(approved,  'tbody-license-approved');
-        renderLicenseSubTable(notPickup, 'tbody-license-not-pickup');
-        renderLicenseSubTable(expired,   'tbody-license-expired');
+        // [B1 fix] กำหนดข้อมูลให้แต่ละ global array ของตัวเอง ไม่ใช้ global เดียวร่วมกัน
+        subDataPending   = globalLicenseData.filter(function(d) { return d[5]==='รอดำเนินการ' || d[5]==='อยู่ระหว่างพิจารณา'; });
+        subDataApproved  = globalLicenseData.filter(function(d) { return d[5]==='อนุมัติแล้ว'; });
+        subDataNotPickup = globalLicenseData.filter(function(d) { return d[5]==='อนุมัติแล้ว' && (d[10]||'') !== 'มารับใบอนุญาตแล้ว'; });
+        subDataExpired   = globalLicenseData.filter(function(d) { return d[5]==='หมดอายุ'; });
+        renderLicenseSubTable(subDataPending,   'tbody-license-pending',   'subDataPending');
+        renderLicenseSubTable(subDataApproved,  'tbody-license-approved',  'subDataApproved');
+        renderLicenseSubTable(subDataNotPickup, 'tbody-license-not-pickup','subDataNotPickup');
+        renderLicenseSubTable(subDataExpired,   'tbody-license-expired',   'subDataExpired');
     }
 
-    function renderLicenseSubTable(data, tbodyId) {
+    function renderLicenseSubTable(data, tbodyId, dataKey) {
         var tbody = document.getElementById(tbodyId);
         if (!tbody) return;
         if (!data || data.length === 0) {
@@ -1276,7 +1421,7 @@
         for (var i = 0; i < data.length; i++) {
             var d = data[i];
             var rowNum   = d[9];
-            var fullName = ((d[0]||'')+(d[1]||'')+' '+(d[2]||'')).trim();
+            var fullName = esc(((d[0]||'')+(d[1]||'')+' '+(d[2]||'')).trim());
             var bc       = sColor[d[5]] || 'secondary';
             var pickup   = d[10] || 'ยังไม่ได้มารับใบอนุญาต';
             var pickupBadge = pickup === 'มารับใบอนุญาตแล้ว'
@@ -1285,14 +1430,16 @@
             html += '<tr>';
             html += '<td class="text-center text-muted fw-bold">' + (i+1) + '</td>';
             html += '<td>' + fullName + '</td>';
-            html += '<td>' + (d[3]||'-') + '</td>';
-            html += '<td style="font-size:0.82rem;">' + (d[4]||'-') + '</td>';
-            html += '<td><span class="badge bg-' + bc + '">' + (d[5]||'-') + '</span></td>';
+            html += '<td>' + esc(d[3]||'-') + '</td>';
+            html += '<td style="font-size:0.82rem;">' + esc(d[4]||'-') + '</td>';
+            html += '<td><span class="badge bg-' + bc + '">' + esc(d[5]||'-') + '</span></td>';
             html += '<td>' + pickupBadge + '</td>';
-            html += '<td style="font-size:0.88rem;">' + (d[6]||'-') + '</td>';
-            html += '<td style="font-size:0.88rem;">' + (d[7]||'-') + '</td>';
+            html += '<td style="font-size:0.88rem;">' + esc(d[6]||'-') + '</td>';
+            html += '<td style="font-size:0.88rem;">' + esc(d[7]||'-') + '</td>';
+            // [B1 fix] ใช้ dataKey (ชื่อ global array ที่ถูกต้องของ sub-table นี้) แทน licenseSubPageData
             html += '<td><div class="action-btns">';
-            html += '<button class="btn btn-outline-primary btn-sm" onclick=\'showLicenseForm(' + JSON.stringify(d) + ')\'><i class="fas fa-edit"></i></button>';
+            html += '<button class="btn btn-outline-success btn-sm" onclick="openMapModal(' + dataKey + '[' + i + '])" title="ดูแผนที่"><i class="fas fa-map-marker-alt"></i></button>';
+            html += '<button class="btn btn-outline-primary btn-sm" onclick="showLicenseForm(' + dataKey + '[' + i + '])"><i class="fas fa-edit"></i></button>';
             html += '<button class="btn btn-outline-danger btn-sm" onclick="confirmDeleteLicense(' + rowNum + ')"><i class="fas fa-trash"></i></button>';
             html += '</div></td></tr>';
         }
@@ -1311,13 +1458,15 @@
         if (currentPageLicense > totalPages) currentPageLicense = 1;
         var start = (currentPageLicense - 1) * PAGE_SIZE;
         var pageData = data.slice(start, start + PAGE_SIZE);
+        // Issue 3 fix: เก็บ pageData ไว้ใน licensePageData แล้วใช้ index แทน JSON.stringify
+        licensePageData = pageData;
         var sColor = { 'อนุมัติแล้ว':'success','รอดำเนินการ':'warning','อยู่ระหว่างพิจารณา':'primary','ไม่อนุมัติ':'danger','หมดอายุ':'secondary' };
         var html = '';
         for (var i = 0; i < pageData.length; i++) {
             var d = pageData[i];
             var bc = sColor[d[5]] || 'secondary';
             var rowNum = d[9];
-            var fullName = ((d[0]||'') + (d[1]||'') + ' ' + (d[2]||'')).trim();
+            var fullName = esc(((d[0]||'') + (d[1]||'') + ' ' + (d[2]||'')).trim());
             var pickup = d[10] || 'ยังไม่ได้มารับใบอนุญาต';
             var pickupBadge = pickup === 'มารับใบอนุญาตแล้ว'
                 ? '<span class="badge bg-success"><i class="fas fa-check me-1"></i>มารับแล้ว</span>'
@@ -1325,14 +1474,15 @@
             html += '<tr>';
             html += '<td class="text-center text-muted fw-bold">' + (start + i + 1) + '</td>';
             html += '<td>' + fullName + '</td>';
-            html += '<td>' + (d[3]||'-') + '</td>';
-            html += '<td style="font-size:0.82rem; max-width:180px;">' + (d[4]||'-') + '</td>';
-            html += '<td><span class="badge bg-' + bc + '">' + (d[5]||'-') + '</span></td>';
+            html += '<td>' + esc(d[3]||'-') + '</td>';
+            html += '<td style="font-size:0.82rem; max-width:180px;">' + esc(d[4]||'-') + '</td>';
+            html += '<td><span class="badge bg-' + bc + '">' + esc(d[5]||'-') + '</span></td>';
             html += '<td>' + pickupBadge + '</td>';
-            html += '<td style="font-size:0.88rem;">' + (d[6]||'-') + '</td>';
-            html += '<td style="font-size:0.88rem;">' + (d[7]||'-') + '</td>';
+            html += '<td style="font-size:0.88rem;">' + esc(d[6]||'-') + '</td>';
+            html += '<td style="font-size:0.88rem;">' + esc(d[7]||'-') + '</td>';
             html += '<td><div class="action-btns">';
-            html += '<button class="btn btn-outline-primary btn-sm" onclick=\'showLicenseForm(' + JSON.stringify(d) + ')\'><i class="fas fa-edit"></i></button>';
+            html += '<button class="btn btn-outline-success btn-sm" onclick="openMapModal(licensePageData[' + i + '])" title="ดูแผนที่"><i class="fas fa-map-marker-alt"></i></button>';
+            html += '<button class="btn btn-outline-primary btn-sm" onclick="showLicenseForm(licensePageData[' + i + '])"><i class="fas fa-edit"></i></button>';
             html += '<button class="btn btn-outline-danger btn-sm" onclick="confirmDeleteLicense(' + rowNum + ')"><i class="fas fa-trash"></i></button>';
             html += '</div></td></tr>';
         }
@@ -1390,6 +1540,8 @@
             setDateFields('lf-expire-day','lf-expire-month','lf-expire-year', data[7] || '');
             document.getElementById('lf-idcard').value    = data[8] || '';
             document.getElementById('lf-pickup').value    = data[10] || 'ยังไม่ได้มารับใบอนุญาต';
+            document.getElementById('lf-lat').value        = data[11] || '';
+            document.getElementById('lf-lng').value        = data[12] || '';
         } else {
             document.getElementById('license-form-title').innerHTML = '<i class="fas fa-plus-circle me-2"></i>เพิ่มใบอนุญาตใหม่';
             ['lf-row','lf-firstname','lf-lastname','lf-idcard','lf-business'].forEach(function(id) { document.getElementById(id).value = ''; });
@@ -1397,6 +1549,8 @@
             document.getElementById('lf-type').value    = '';
             document.getElementById('lf-status').value  = 'รอดำเนินการ';
             document.getElementById('lf-pickup').value  = 'ยังไม่ได้มารับใบอนุญาต';
+            document.getElementById('lf-lat').value      = '';
+            document.getElementById('lf-lng').value      = '';
             clearDateFields('lf-issue-day','lf-issue-month','lf-issue-year');
             clearDateFields('lf-expire-day','lf-expire-month','lf-expire-year');
         }
@@ -1405,6 +1559,10 @@
 
     function hideLicenseForm() {
         document.getElementById('license-form-wrap').classList.add('d-none');
+        // reset map picker
+        document.getElementById('picker-map-wrap').style.display = 'none';
+        document.getElementById('picker-map-btn-text').textContent = '📍 กดเพื่อเลือกตำแหน่งบนแผนที่';
+        if (pickerMarker && pickerMap) { pickerMap.removeLayer(pickerMarker); pickerMarker = null; }
     }
 
     function submitLicenseForm() {
@@ -1419,7 +1577,10 @@
             status:     document.getElementById('lf-status').value,
             issueDate:  getDateStr('lf-issue-day','lf-issue-month','lf-issue-year'),
             expireDate: getDateStr('lf-expire-day','lf-expire-month','lf-expire-year'),
-            pickup:     document.getElementById('lf-pickup').value
+            pickup:     document.getElementById('lf-pickup').value,
+            lat:        document.getElementById('lf-lat').value.trim(),
+            lng:        document.getElementById('lf-lng').value.trim(),
+            username:   currentUser
         };
         if (!form.firstname || !form.lastname || !form.idCard || !form.business || !form.type) {
             Swal.fire({ icon: 'warning', title: 'กรุณากรอกข้อมูลให้ครบ', text: 'ชื่อ / นามสกุล / เลขบัตร / สถานประกอบการ / ประเภท เป็นข้อมูลจำเป็น' });
@@ -1437,6 +1598,229 @@
                 Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: res.message });
             }
         });
+    }
+
+    // ===== MAP PICKER (ในฟอร์มใบอนุญาต) =====
+    var pickerMap     = null;
+    var pickerMarker  = null;
+
+    // พิกัดกลางจันทบุรี (default เมื่อยังไม่มีค่า)
+    var CHAN_LAT = 12.6092, CHAN_LNG = 102.1037;
+
+    function togglePickerMap() {
+        var wrap    = document.getElementById('picker-map-wrap');
+        var btnText = document.getElementById('picker-map-btn-text');
+        if (wrap.style.display === 'none') {
+            wrap.style.display = 'block';
+            btnText.textContent = '✖ ปิดแผนที่';
+            setTimeout(function() { initPickerMap(); }, 60); // รอ DOM render
+        } else {
+            wrap.style.display = 'none';
+            btnText.textContent = '📍 กดเพื่อเลือกตำแหน่งบนแผนที่';
+        }
+    }
+
+    function initPickerMap() {
+        var lat = parseFloat(document.getElementById('lf-lat').value) || CHAN_LAT;
+        var lng = parseFloat(document.getElementById('lf-lng').value) || CHAN_LNG;
+
+        if (!pickerMap) {
+            pickerMap = L.map('picker-map').setView([lat, lng], 15);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(pickerMap);
+
+            pickerMap.on('click', function(e) {
+                var ll = e.latlng;
+                document.getElementById('lf-lat').value = ll.lat.toFixed(6);
+                document.getElementById('lf-lng').value = ll.lng.toFixed(6);
+                if (pickerMarker) {
+                    pickerMarker.setLatLng(ll);
+                } else {
+                    pickerMarker = L.marker(ll, { draggable: true }).addTo(pickerMap);
+                    pickerMarker.on('dragend', function(ev) {
+                        var pos = ev.target.getLatLng();
+                        document.getElementById('lf-lat').value = pos.lat.toFixed(6);
+                        document.getElementById('lf-lng').value = pos.lng.toFixed(6);
+                    });
+                }
+                pickerMarker.bindPopup('<b>ตำแหน่งที่เลือก</b><br>' + ll.lat.toFixed(6) + ', ' + ll.lng.toFixed(6)).openPopup();
+            });
+        } else {
+            pickerMap.invalidateSize();
+            pickerMap.setView([lat, lng], 15);
+        }
+
+        // ถ้ามีค่า lat/lng อยู่แล้ว (กรณีแก้ไข) ให้แสดง marker เลย
+        var hasLatLng = !isNaN(parseFloat(document.getElementById('lf-lat').value)) &&
+                        !isNaN(parseFloat(document.getElementById('lf-lng').value));
+        if (hasLatLng) {
+            if (pickerMarker) {
+                pickerMarker.setLatLng([lat, lng]);
+            } else {
+                pickerMarker = L.marker([lat, lng], { draggable: true }).addTo(pickerMap);
+                pickerMarker.on('dragend', function(ev) {
+                    var pos = ev.target.getLatLng();
+                    document.getElementById('lf-lat').value = pos.lat.toFixed(6);
+                    document.getElementById('lf-lng').value = pos.lng.toFixed(6);
+                });
+            }
+            pickerMarker.bindPopup('<b>ตำแหน่งปัจจุบัน</b><br>' + lat.toFixed(6) + ', ' + lng.toFixed(6)).openPopup();
+        }
+    }
+
+    // sync marker เมื่อ user พิมพ์ lat/lng โดยตรง
+    function syncPickerFromInput() {
+        if (!pickerMap || document.getElementById('picker-map-wrap').style.display === 'none') return;
+        var lat = parseFloat(document.getElementById('lf-lat').value);
+        var lng = parseFloat(document.getElementById('lf-lng').value);
+        if (isNaN(lat) || isNaN(lng)) return;
+        pickerMap.setView([lat, lng], 16);
+        if (pickerMarker) {
+            pickerMarker.setLatLng([lat, lng]);
+        } else {
+            pickerMarker = L.marker([lat, lng], { draggable: true }).addTo(pickerMap);
+            pickerMarker.on('dragend', function(ev) {
+                var pos = ev.target.getLatLng();
+                document.getElementById('lf-lat').value = pos.lat.toFixed(6);
+                document.getElementById('lf-lng').value = pos.lng.toFixed(6);
+            });
+        }
+    }
+
+    // ===== OVERVIEW MAP (แผนที่รวมทุกร้าน) =====
+    var overviewMap         = null;
+    var overviewInitialized = false;
+    var overviewMarkers     = [];
+
+    var STATUS_COLOR = {
+        'อนุมัติแล้ว':           '#16a34a',
+        'รอดำเนินการ':            '#f59e0b',
+        'อยู่ระหว่างพิจารณา':    '#3b82f6',
+        'ไม่อนุมัติ':             '#dc2626',
+        'หมดอายุ':               '#94a3b8'
+    };
+
+    function initOverviewMap() {
+        if (!overviewInitialized) {
+            overviewMap = L.map('overview-map').setView([CHAN_LAT, CHAN_LNG], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(overviewMap);
+            overviewInitialized = true;
+        } else {
+            overviewMap.invalidateSize();
+        }
+        refreshOverviewMarkers();
+    }
+
+    function refreshOverviewMarkers() {
+        if (!overviewMap) return;
+        // ลบ marker เดิมทั้งหมด
+        overviewMarkers.forEach(function(m) { overviewMap.removeLayer(m); });
+        overviewMarkers = [];
+
+        var count = 0;
+        var bounds = [];
+
+        globalLicenseData.forEach(function(d) {
+            var lat = parseFloat(d[11]);
+            var lng = parseFloat(d[12]);
+            if (isNaN(lat) || isNaN(lng)) return;
+
+            // [S4 fix] ครอบทุก field ด้วย esc() ป้องกัน XSS ใน Leaflet popup HTML
+            var name   = esc(((d[0]||'')+(d[1]||'')+' '+(d[2]||'')).trim());
+            var biz    = esc(d[3]||'-');
+            var status = esc(d[5] || '-');
+            var expire = esc(d[7] || '-');
+            var pickup = esc(d[10] || '-');
+            var color  = STATUS_COLOR[(d[5]||'')] || '#94a3b8';
+
+            var marker = L.circleMarker([lat, lng], {
+                radius: 11,
+                fillColor: color,
+                color: '#fff',
+                weight: 2.5,
+                opacity: 1,
+                fillOpacity: 0.88
+            }).addTo(overviewMap);
+
+            var badgeStyle = 'display:inline-block;padding:2px 8px;border-radius:10px;color:#fff;font-size:0.75rem;background:' + color + ';margin-top:4px;';
+            marker.bindPopup(
+                '<div style="font-family:Sarabun,sans-serif;min-width:200px;line-height:1.6;">' +
+                '<div style="font-size:0.97rem;font-weight:700;color:#0f2c59;">' + biz + '</div>' +
+                '<div style="font-size:0.82rem;color:#64748b;">' + name + '</div>' +
+                '<span style="' + badgeStyle + '">' + status + '</span>' +
+                '<div style="font-size:0.78rem;color:#94a3b8;margin-top:4px;">หมดอายุ: ' + expire + '</div>' +
+                '<div style="font-size:0.78rem;color:#94a3b8;">สถานะรับใบ: ' + pickup + '</div>' +
+                '<a href="https://www.google.com/maps?q=' + lat + ',' + lng + '" target="_blank" ' +
+                'style="font-size:0.8rem;color:#0369a1;display:block;margin-top:6px;">' +
+                '<i class="fas fa-external-link-alt me-1"></i>เปิดใน Google Maps</a>' +
+                '</div>'
+            , { maxWidth: 240 });
+
+            overviewMarkers.push(marker);
+            bounds.push([lat, lng]);
+            count++;
+        });
+
+        // อัปเดต counter
+        var countEl = document.getElementById('overview-map-count');
+        if (countEl) countEl.textContent = 'แสดง ' + count + ' จาก ' + globalLicenseData.length + ' รายการ';
+
+        // ซูมให้พอดีกับ marker ทั้งหมด
+        if (bounds.length > 0) {
+            overviewMap.fitBounds(bounds, { padding: [40, 40], maxZoom: 16 });
+        }
+
+        // [I4 fix] แสดง placeholder เมื่อไม่มีข้อมูล GPS เลย
+        var noGpsEl = document.getElementById('overview-map-no-gps');
+        if (noGpsEl) {
+            noGpsEl.style.display = (count === 0) ? 'flex' : 'none';
+        }
+    }
+
+    // ===== MAP MODAL =====
+    function openMapModal(d) {
+        // d[11]=lat, d[12]=lng, d[3]=business, d[0-2]=name
+        var lat  = d[11] ? d[11].toString().trim() : '';
+        var lng  = d[12] ? d[12].toString().trim() : '';
+        var name = ((d[0]||'')+(d[1]||'')+' '+(d[2]||'')).trim();
+        var biz  = d[3] || '';
+
+        document.getElementById('map-modal-title').innerText    = biz || name;
+        document.getElementById('map-modal-subtitle').innerText = name + (biz ? ' · ' + biz : '');
+
+        var iframe    = document.getElementById('map-iframe');
+        var loading   = document.getElementById('map-loading');
+        var noGps     = document.getElementById('map-no-gps');
+        var openBtn   = document.getElementById('map-open-btn');
+        var searchLink= document.getElementById('map-search-link');
+
+        iframe.style.display = 'none';
+        loading.classList.remove('d-none');
+        noGps.classList.add('d-none');
+
+        if (lat && lng) {
+            var mapsUrl = 'https://www.google.com/maps?q=' + lat + ',' + lng + '&z=17&output=embed';
+            var openUrl = 'https://www.google.com/maps?q=' + lat + ',' + lng + '&z=17';
+            iframe.onload = function() {
+                loading.classList.add('d-none');
+                iframe.style.display = 'block';
+            };
+            iframe.src = mapsUrl;
+            openBtn.href = openUrl;
+            openBtn.style.display = '';
+        } else {
+            loading.classList.add('d-none');
+            noGps.classList.remove('d-none');
+            openBtn.style.display = 'none';
+            var searchQ = encodeURIComponent(biz + ' จันทบุรี');
+            searchLink.href = 'https://www.google.com/maps/search/' + searchQ;
+            iframe.src = '';
+        }
+
+        new bootstrap.Modal(document.getElementById('mapModal')).show();
     }
 
     function confirmDeleteLicense(rowNum) {
@@ -1458,12 +1842,44 @@
     }
 
     function changeStatus(rowNumber, newStatus) {
-        var newDate = "";
-        if(newStatus === "นัดหมายคิวแล้ว") {
-            newDate = prompt("กรุณาระบุ 'วันที่นัดหมาย'\n(เช่น 15 ส.ค. 69)", "");
-            if(newDate === null) return;
+        if (newStatus === "นัดหมายคิวแล้ว") {
+            // ใช้ SweetAlert2 แทน native prompt() เพื่อรองรับ mobile และ UX ที่ดีขึ้น
+            Swal.fire({
+                title: 'ระบุวันที่นัดหมาย',
+                input: 'text',
+                inputPlaceholder: 'เช่น 15 ส.ค. 69',
+                inputAttributes: { autocomplete: 'off' },
+                showCancelButton: true,
+                confirmButtonText: 'บันทึก',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonColor: '#0f2c59',
+                cancelButtonColor: '#64748b',
+                inputValidator: function(value) {
+                    if (!value || value.trim() === '') return 'กรุณาระบุวันที่นัดหมาย';
+                }
+            }).then(function(result) {
+                if (!result.isConfirmed) return;
+                _doChangeStatus(rowNumber, newStatus, result.value.trim());
+            });
+        } else {
+            var confirmText = newStatus === 'ทำเสร็จแล้ว' ? 'ยืนยันว่าทำหมันเสร็จแล้ว?' : 'ยืนยันการยกเลิกคิวนี้?';
+            Swal.fire({
+                title: confirmText,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'ยืนยัน',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonColor: newStatus === 'ยกเลิก' ? '#dc2626' : '#0f2c59',
+                cancelButtonColor: '#64748b'
+            }).then(function(result) {
+                if (!result.isConfirmed) return;
+                _doChangeStatus(rowNumber, newStatus, "");
+            });
         }
-        Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+    }
+
+    function _doChangeStatus(rowNumber, newStatus, newDate) {
+        Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
         callGAS("updateDataStatus", { rowNumber: rowNumber, newStatus: newStatus, newDate: newDate, username: currentUser }, function(res) {
             if(res.success) {
                 Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ!', timer: 1500, showConfirmButton: false });

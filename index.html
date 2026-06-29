@@ -4,7 +4,7 @@
         <base target="_top">
         <title>บริการประชาชน - กองสาธารณสุขและสิ่งแวดล้อมเทศบาลเมืองจันทนิมิต</title>
         
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
         <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -90,7 +90,7 @@
             <div class="banner-content">
                 <i class="fas fa-bullhorn"></i> <b id="banner-title" class="d-none">ประกาศ:</b>
                 <span id="banner-text">กำลังตรวจสอบ...</span>
-                <a id="banner-link" href="#" target="_blank" class="d-none" style="color: white; text-decoration: underline; font-weight: 700; margin-left: 5px;"></a>
+                <a id="banner-link" href="#" target="_blank" rel="noopener noreferrer" class="d-none" style="color: white; text-decoration: underline; font-weight: 700; margin-left: 5px;"></a>
             </div>
             <button class="banner-close-btn" onclick="document.getElementById('announcement-banner').style.display='none'">
                 <i class="fas fa-times"></i>
@@ -374,7 +374,7 @@
                             <p>🏢 <b>สถานที่ติดต่อ:</b> กองสาธารณสุขและสิ่งแวดล้อม (ชั้น 3) เทศบาลเมืองจันทนิมิต</p>
                             <p>📞 <b>เบอร์โทรศัพท์:</b> 039-311-073 ต่อ 306 (ฝ่ายบริการ)</p>
                             <p>🕒 <b>เวลาทำการ:</b> วันจันทร์ - วันศุกร์ เวลา 08:30 น. - 16:30 น. ยกเว้นวันหยุดราชการ</p>
-                            <p><i class="fab fa-line text-success"></i> <a href="https://line.me/ti/g/NzNCvxyMqP" target="_blank" class="text-success fw-bold text-decoration-none">เข้าร่วมกลุ่ม LINE ทำหมันสุนัขและแมว เทศบาลเมืองจันทนิมิต</a></p>
+                            <p><i class="fab fa-line text-success"></i> <a href="https://line.me/ti/g/NzNCvxyMqP" target="_blank" rel="noopener noreferrer" class="text-success fw-bold text-decoration-none">เข้าร่วมกลุ่ม LINE ทำหมันสุนัขและแมว เทศบาลเมืองจันทนิมิต</a></p>
                         </div>
                     </div>
 
@@ -520,7 +520,7 @@
                                 <div class="col-12 col-md-6">
                                     <div class="content-card p-4" style="border-radius:12px;">
                                         <h6 style="font-weight:700; color:#0f2c59;"><i class="fas fa-share-alt me-2"></i>ช่องทางออนไลน์</h6>
-                                        <a href="https://www.facebook.com/profile.php?id=100068959037043" target="_blank" class="btn btn-outline-primary w-100 mb-2" style="border-radius:8px;">
+                                        <a href="https://www.facebook.com/profile.php?id=100068959037043" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary w-100 mb-2" style="border-radius:8px;">
                                             <i class="fab fa-facebook-f me-2"></i>Facebook Page
                                         </a>
                 
@@ -570,12 +570,24 @@
             </div>
         </div>
 
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 
         <script>
+          // ฟังก์ชัน escape HTML ป้องกัน XSS — ใช้ครอบข้อมูลจาก user ทุกครั้งก่อนใส่ innerHTML
+          function esc(str) {
+              return String(str == null ? '' : str)
+                  .replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/"/g, '&quot;')
+                  .replace(/'/g, '&#39;');
+          }
+
           var galleryDataGlobal = [];
-          var globalData = []; 
+          var globalData = [];
           var currentStatusFilter = 'ทั้งหมด';
+          // [S2 fix] เก็บข้อมูลบัตรคิวในรูป array แทนการ embed ใน onclick attribute
+          var pageTicketData = [];
 
           function switchProject(projectName) {
               window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -690,7 +702,8 @@
             });
             
             callGAS("getGalleryData", null, function(res) {
-                if(res && !res.error) galleryDataGlobal = res.gallery;
+                // [M2 fix] ตรวจสอบว่าเป็น Array จริงก่อนกำหนดค่า
+                if(res && Array.isArray(res.gallery)) galleryDataGlobal = res.gallery;
             });
 
             fetchData();
@@ -699,11 +712,18 @@
           // ✅ ดึงข้อมูลคิว (ใช้ callGAS)
           function fetchData() {
              callGAS("processForm", { searchtext: "" }, function(dataArray) {
-                if(dataArray) { 
-                    globalData = dataArray; 
-                    updateDashboard(globalData); 
+                if(dataArray) {
+                    globalData = dataArray;
+                    updateDashboard(globalData);
                 }
-                applyFilters(); 
+                applyFilters();
+             // [M1 fix] เพิ่ม error callback — แสดงข้อความแทน spinner ค้าง
+             }, function() {
+                document.getElementById('search-results').innerHTML =
+                    "<div class='alert alert-danger text-center py-4'>" +
+                    "<i class='fas fa-exclamation-triangle fa-2x mb-2'></i><br>" +
+                    "<b>โหลดข้อมูลล้มเหลว</b><br>" +
+                    "<span class='text-muted' style='font-size:0.9rem;'>กรุณารีเฟรชหน้าใหม่ หรือลองอีกครั้งในภายหลัง</span></div>";
              });
           }
 
@@ -725,7 +745,9 @@
           }
 
           function createTable(dataArray) {
-            if(dataArray && dataArray.length != 0){
+            if(dataArray && dataArray.length > 0){
+              // [S2 fix] รีเซ็ต pageTicketData ทุกครั้งที่ render ตารางใหม่
+              pageTicketData = [];
               var result = "<table class='table table-hover mt-3 table-custom bg-white' style='font-size:0.95rem'><thead style='white-space: nowrap'><tr>"+
                            "<th class='text-center'>ลำดับ</th><th style='min-width: 160px;'>ชื่อ-สกุล</th>"+
                            "<th class='text-center'>สถานะ</th><th class='text-center'>วันที่นัดหมาย</th>"+
@@ -739,16 +761,31 @@
                                    rawStatus === "ติดต่อไม่ได้" ? "bg-secondary" :
                                    rawStatus === "รอดำเนินการ" ? "bg-warning text-dark" : "bg-danger";
                   var trClass = (rawStatus.includes("ยกเลิก") || rawStatus.includes("นอกเขตพื้นที่")) ? " class='cancelled-row'" : (rawStatus === "ทำเสร็จแล้ว") ? " class='completed-row'" : "";
-                  var nameText = (dataArray[i][1] ? dataArray[i][1].toString().trim() : "") + (dataArray[i][2] ? dataArray[i][2].toString().trim() : "");
-                  var dateText = dataArray[i][4] ? dataArray[i][4].toString().trim() : "<i class='text-muted'>รอจัดคิว</i>";
+                  var nameText = esc((dataArray[i][1] ? dataArray[i][1].toString().trim() : "") + (dataArray[i][2] ? dataArray[i][2].toString().trim() : ""));
+                  var dateText = dataArray[i][4] ? esc(dataArray[i][4].toString().trim()) : "<i class='text-muted'>รอจัดคิว</i>";
                   var rawPhone = dataArray[i][5] ? dataArray[i][5].toString().trim() : "";
-                  var safePhone = rawPhone.replace(/\D/g, '').length >= 9 ? rawPhone.replace(/\D/g, '').substring(0, 3) + "-XXXX" + rawPhone.replace(/\D/g, '').substring(rawPhone.replace(/\D/g, '').length - 3) : rawPhone;
-                  var addressText = dataArray[i][7] ? dataArray[i][7].toString().trim() : "";
-                  var countText = dataArray[i][9] ? dataArray[i][9].toString().trim() : "0";
-                  var petType = dataArray[i][8] ? dataArray[i][8].toString().trim() : "สัตว์มีเจ้าของ";
-                  var ticketBtn = (rawStatus === "นัดหมายคิวแล้ว") ? "<br><button class='btn btn-sm btn-outline-success mt-2' style='border-radius:20px; font-size:0.8rem;' onclick='downloadTicket(\"" + nameText + "\", \"" + dataArray[i][4] + "\", \"" + countText + "\", \"" + safePhone + "\", \"" + petType + "\")'><i class='fas fa-ticket-alt'></i> บัตรคิว</button>" : "";
+                  var digits = rawPhone.replace(/\D/g, '');
+                  var safePhone = esc(digits.length >= 9 ? digits.substring(0, 3) + "-XXXX" + digits.substring(digits.length - 3) : rawPhone);
+                  var addressText = esc(dataArray[i][7] ? dataArray[i][7].toString().trim() : "");
+                  var countText = esc(dataArray[i][9] ? dataArray[i][9].toString().trim() : "0");
+                  var petType = esc(dataArray[i][8] ? dataArray[i][8].toString().trim() : "สัตว์มีเจ้าของ");
+                  // [S2 fix] เก็บข้อมูลบัตรคิวใน pageTicketData array แทนการ embed ใน onclick
+                  var ticketBtn = "";
+                  if (rawStatus === "นัดหมายคิวแล้ว") {
+                      var ticketIdx = pageTicketData.length;
+                      pageTicketData.push({
+                          name:    (dataArray[i][1]||'').toString().trim() + (dataArray[i][2]||'').toString().trim(),
+                          date:    (dataArray[i][4]||'').toString().trim(),
+                          count:   (dataArray[i][9]||'0').toString().trim(),
+                          phone:   safePhone,
+                          petType: (dataArray[i][8]||'สัตว์มีเจ้าของ').toString().trim()
+                      });
+                      ticketBtn = "<br><button class='btn btn-sm btn-outline-success mt-2' style='border-radius:20px; font-size:0.8rem;' " +
+                                  "onclick='downloadTicketByIndex(" + ticketIdx + ")'>" +
+                                  "<i class='fas fa-ticket-alt'></i> บัตรคิว</button>";
+                  }
                   result += "<tr" + trClass + "><td class='text-center fw-bold align-middle'>" + (i + 1) + "</td><td class='align-middle'>" + nameText + "</td>"+
-                            "<td class='text-center align-middle'><span class='badge rounded-pill " + badgeClass + "' style='font-weight: 400; padding: 6px 12px;'>" + rawStatus + "</span>" + ticketBtn + "</td>"+
+                            "<td class='text-center align-middle'><span class='badge rounded-pill " + badgeClass + "' style='font-weight: 400; padding: 6px 12px;'>" + esc(rawStatus) + "</span>" + ticketBtn + "</td>"+
                             "<td class='align-middle text-center'>" + dateText + "</td><td class='align-middle'>" + safePhone + "</td>"+
                             "<td class='align-middle text-truncate' style='max-width: 200px;' title='" + addressText + "'>" + addressText + "</td>"+
                             "<td class='text-center align-middle'>" + petType + "</td><td class='text-center align-middle'>" + countText + "</td></tr>";
@@ -758,6 +795,13 @@
             } else {
               document.getElementById('search-results').innerHTML = "<div class='alert alert-light text-center py-5 border'><i class='fas fa-folder-open fa-3x text-muted mb-3'></i><br>ไม่พบข้อมูลในหมวดหมู่นี้</div>";
             }
+          }
+
+          // [S2 fix] wrapper ที่รับ index แทน arguments inline ป้องกัน JS injection จากชื่อ
+          function downloadTicketByIndex(idx) {
+              var d = pageTicketData[idx];
+              if (!d) return;
+              downloadTicket(d.name, d.date, d.count, d.phone, d.petType);
           }
 
           function downloadTicket(name, date, count, phone, petType) {
@@ -794,16 +838,27 @@
 
           // ✅ ส่งฟอร์มลงทะเบียน (ใช้ callGAS)
           function submitRegistration(event) {
-              event.preventDefault(); 
+              event.preventDefault();
               var count = parseInt(document.getElementById('regPetCount').value) || 0;
               var petDetailsArr = [];
               if (count > 0) {
-                  var types = document.querySelectorAll('.pet-type-input');
-                  var ageYears = document.querySelectorAll('.pet-age-year-input'); 
-                  var ageMonths = document.querySelectorAll('.pet-age-month-input'); 
+                  var types    = document.querySelectorAll('.pet-type-input');
+                  var ageYears = document.querySelectorAll('.pet-age-year-input');
+                  var ageMonths= document.querySelectorAll('.pet-age-month-input');
                   for(var i=0; i<count; i++) {
-                      var y = ageYears[i].value || "0"; 
-                      var m = ageMonths[i].value || "0";
+                      var y = parseInt(ageYears[i].value)  || 0;
+                      var m = parseInt(ageMonths[i].value) || 0;
+                      // [M4 fix] ตรวจสอบอายุสัตว์ต้องไม่น้อยกว่า 6 เดือน
+                      var totalMonths = y * 12 + m;
+                      if (totalMonths < 6) {
+                          Swal.fire({
+                              icon: 'warning',
+                              title: 'อายุสัตว์เลี้ยงไม่เป็นไปตามเงื่อนไข',
+                              html: 'สัตว์เลี้ยงตัวที่ <b>' + (i+1) + '</b> มีอายุน้อยกว่า 6 เดือน<br>กรุณาตรวจสอบข้อมูลอีกครั้ง',
+                              confirmButtonColor: '#0f2c59'
+                          });
+                          return;
+                      }
                       petDetailsArr.push("ตัวที่ " + (i+1) + ": " + types[i].value + " (อายุ " + y + " ปี " + m + " เดือน)");
                   }
               }
@@ -863,7 +918,8 @@
                   var html = "";
                   for(var i=0; i<galleryDataGlobal.length; i++) {
                       var album = galleryDataGlobal[i];
-                      html += '<div class="col-sm-6 col-md-4 mb-4"><div class="content-card text-center" style="cursor:pointer;" onclick="openAlbum(' + i + ')"><i class="fas fa-folder fa-3x text-warning mb-2"></i><h6 class="fw-bold">' + album.albumName + '</h6><small class="text-muted">' + album.photos.length + ' รูปภาพ</small></div></div>';
+                      // [S3 fix] ครอบ albumName ด้วย esc() ป้องกัน XSS
+                      html += '<div class="col-sm-6 col-md-4 mb-4"><div class="content-card text-center" style="cursor:pointer;" onclick="openAlbum(' + i + ')"><i class="fas fa-folder fa-3x text-warning mb-2"></i><h6 class="fw-bold">' + esc(album.albumName) + '</h6><small class="text-muted">' + album.photos.length + ' รูปภาพ</small></div></div>';
                   }
                   listView.innerHTML = html;
               }
@@ -919,23 +975,32 @@
                   var html = '<div class="row g-3">';
                   for (var i = 0; i < data.length; i++) {
                       var d = data[i];
-                      var c = sColor[d[3]] || '#64748b';
-                      var ic = sIcon[d[3]] || 'fa-info-circle';
+                      var statusKey = (d[3]||'').toString();
+                      var c  = sColor[statusKey] || '#64748b';
+                      var ic = sIcon[statusKey]  || 'fa-info-circle';
                       html += '<div class="col-12"><div class="content-card p-4" style="border-radius:12px; border-left:5px solid ' + c + ';">';
                       html += '<div class="d-flex justify-content-between align-items-start flex-wrap gap-2">';
-                      html += '<div><h6 style="font-weight:700; color:#0f2c59; margin:0 0 4px;">' + (d[0]||'-') + '</h6>';
-                      html += '<p class="mb-1" style="color:#475569; font-size:0.9rem;"><i class="fas fa-store me-1"></i>' + (d[1]||'-') + '</p>';
-                      html += '<p class="mb-0" style="color:#64748b; font-size:0.85rem;"><i class="fas fa-tag me-1"></i>' + (d[2]||'-') + '</p></div>';
-                      html += '<span style="background:' + c + '1a; color:' + c + '; border:1px solid ' + c + '4d; padding:5px 14px; border-radius:20px; font-size:0.82rem; font-weight:600; white-space:nowrap;"><i class="fas ' + ic + ' me-1"></i>' + (d[3]||'-') + '</span></div>';
+                      // [S1 fix] ครอบทุก field ด้วย esc() ป้องกัน XSS จากข้อมูลใน Sheet
+                      html += '<div><h6 style="font-weight:700; color:#0f2c59; margin:0 0 4px;">' + esc(d[0]||'-') + '</h6>';
+                      html += '<p class="mb-1" style="color:#475569; font-size:0.9rem;"><i class="fas fa-store me-1"></i>' + esc(d[1]||'-') + '</p>';
+                      html += '<p class="mb-0" style="color:#64748b; font-size:0.85rem;"><i class="fas fa-tag me-1"></i>' + esc(d[2]||'-') + '</p></div>';
+                      html += '<span style="background:' + c + '1a; color:' + c + '; border:1px solid ' + c + '4d; padding:5px 14px; border-radius:20px; font-size:0.82rem; font-weight:600; white-space:nowrap;"><i class="fas ' + ic + ' me-1"></i>' + esc(d[3]||'-') + '</span></div>';
                       html += '<hr style="margin:12px 0; border-color:#f1f5f9;">';
                       html += '<div class="row g-2" style="font-size:0.88rem; color:#64748b;">';
-                      html += '<div class="col-6"><i class="fas fa-calendar-plus me-1 text-success"></i>วันที่ออก: <b style="color:#334155;">' + (d[4]||'-') + '</b></div>';
-                      html += '<div class="col-6"><i class="fas fa-calendar-times me-1 text-danger"></i>วันหมดอายุ: <b style="color:#334155;">' + (d[5]||'-') + '</b></div>';
+                      html += '<div class="col-6"><i class="fas fa-calendar-plus me-1 text-success"></i>วันที่ออก: <b style="color:#334155;">' + esc(d[4]||'-') + '</b></div>';
+                      html += '<div class="col-6"><i class="fas fa-calendar-times me-1 text-danger"></i>วันหมดอายุ: <b style="color:#334155;">' + esc(d[5]||'-') + '</b></div>';
                       var pickup = d[6] || 'ยังไม่ได้มารับใบอนุญาต';
                       var pickupHtml = pickup === 'มารับใบอนุญาตแล้ว'
                           ? '<span style="background:#dcfce7; color:#166534; border:1px solid #bbf7d0; padding:3px 10px; border-radius:20px; font-size:0.82rem; font-weight:600;"><i class="fas fa-check-circle me-1"></i>มารับใบอนุญาตแล้ว</span>'
                           : '<span style="background:#fef9c3; color:#854d0e; border:1px solid #fde047; padding:3px 10px; border-radius:20px; font-size:0.82rem; font-weight:600;"><i class="fas fa-clock me-1"></i>ยังไม่ได้มารับใบอนุญาต</span>';
                       html += '<div class="col-12 mt-1"><i class="fas fa-hand-holding me-1"></i>สถานะรับใบ: ' + pickupHtml + '</div>';
+                      // ปุ่มดูแผนที่ (d[7]=lat, d[8]=lng)
+                      var lat = d[7] ? d[7].toString().trim() : '';
+                      var lng = d[8] ? d[8].toString().trim() : '';
+                      if (lat && lng) {
+                          var mapsUrl = 'https://www.google.com/maps?q=' + lat + ',' + lng + '&z=17';
+                          html += '<div class="col-12 mt-2"><a href="' + mapsUrl + '" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:6px; padding:6px 14px; background:#0f2c59; color:white; border-radius:8px; font-size:0.85rem; font-weight:600; text-decoration:none;"><i class="fas fa-map-marker-alt"></i>ดูแผนที่สถานประกอบการ</a></div>';
+                      }
                       html += '</div></div></div>';
                   }
                   html += '</div>';
