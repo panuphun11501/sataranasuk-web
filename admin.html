@@ -9,7 +9,7 @@
 
     <script>
       var GAS_URL    = "https://script.google.com/macros/s/AKfycbyn5PE7PgLcAUvzMqvkM6pDY3sRrWH7wjKO7gY1E-Vld5qCL_wIzmCUoht1b3BCZAVD/exec";
-      var GAS_SECRET = "sataranasuk";
+      var GAS_SECRET = "Jt9mK2pQ8xL5wRnB7cYeXvD3sAhF6gZq";
       function callGAS(action, data, successHandler, failureHandler) {
         var body = { secret: GAS_SECRET, action: action };
         if (data) body.data = data;
@@ -274,6 +274,7 @@
                         </tbody>
                     </table>
                 </div>
+                <div id="admin-tbody-paginator" class="d-flex justify-content-center align-items-center gap-2 py-3 flex-wrap"></div>
             </div>
 
             <!-- ===== SECTION: PET SCHEDULED ===== -->
@@ -551,6 +552,7 @@
                         </tbody>
                     </table>
                 </div>
+                <div id="license-tbody-paginator" class="d-flex justify-content-center align-items-center gap-2 py-3 flex-wrap"></div>
             </div>
             <!-- ===== SECTION: LICENSE EXPIRING ===== -->
             <div id="section-license-expiring" class="page-section">
@@ -742,6 +744,49 @@
     var currentUser = '';
     var PAGE_SIZE = 20;
     var currentPage = 1;
+    var sessionTimer = null;
+    var SESSION_TIMEOUT = 30 * 60 * 1000; // 30 นาที
+    var warningTimer = null;
+
+    function resetSessionTimer() {
+        if (sessionTimer) clearTimeout(sessionTimer);
+        if (warningTimer) clearTimeout(warningTimer);
+        if (!currentUser) return; // ถ้ายังไม่ได้ login ไม่ต้องนับ
+        // แจ้งเตือนก่อน logout 2 นาที
+        warningTimer = setTimeout(function() {
+            Swal.fire({
+                icon: 'warning',
+                title: 'เซสชันใกล้หมดอายุ',
+                html: 'ระบบจะออกจากระบบอัตโนมัติใน <b>2 นาที</b><br>กดปุ่มด้านล่างเพื่อขยายเวลา',
+                confirmButtonText: 'ยังใช้งานอยู่',
+                confirmButtonColor: '#0f2c59',
+                timer: 120000,
+                timerProgressBar: true,
+            }).then(function(result) {
+                if (result.isConfirmed || result.dismiss === Swal.DismissReason.timer) {
+                    if (result.isConfirmed) resetSessionTimer();
+                }
+            });
+        }, SESSION_TIMEOUT - 2 * 60 * 1000);
+        // auto logout
+        sessionTimer = setTimeout(function() {
+            Swal.close();
+            Swal.fire({
+                icon: 'info',
+                title: 'หมดเวลาเซสชัน',
+                text: 'ระบบออกจากระบบอัตโนมัติเนื่องจากไม่มีการใช้งานเกิน 30 นาที',
+                confirmButtonText: 'เข้าสู่ระบบใหม่',
+                confirmButtonColor: '#0f2c59'
+            }).then(function() { logout(); });
+        }, SESSION_TIMEOUT);
+    }
+
+    // reset timer ทุกครั้งที่มีการโต้ตอบ
+    ['click','keydown','mousemove','scroll'].forEach(function(evt) {
+        document.addEventListener(evt, function() {
+            if (currentUser) resetSessionTimer();
+        }, { passive: true });
+    });
 
     // ===== LOGIN =====
     function login() {
@@ -765,6 +810,7 @@
                 var startSection = (currentRole === 'license') ? 'license' : 'pet';
                 switchSection(startSection);
                 if (currentRole !== 'license') loadData();
+                resetSessionTimer(); // เริ่มนับเวลา session
             } else {
                 err.innerText = response.message;
                 err.classList.remove("d-none");
@@ -807,25 +853,38 @@
     }
 
     function logout() {
-        currentRole = '';
-        currentUser = '';
-        currentPage = 1;
-        document.getElementById("username").value = "";
-        document.getElementById("password").value = "";
-        // reset ปุ่ม login
-        var btn = document.getElementById("btn-login-submit");
-        if (btn) { btn.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>เข้าสู่ระบบหลังบ้าน'; btn.disabled = false; }
-        // reset error
-        var err = document.getElementById("login-error");
-        if (err) err.classList.add("d-none");
-        // reset tabs
-        ['tab-pet','tab-license','tab-settings','tab-log'].forEach(function(id) {
-            var el = document.getElementById(id);
-            if (el) el.style.display = '';
+        Swal.fire({
+            title: 'ออกจากระบบ?',
+            text: 'ต้องการออกจากระบบหรือไม่',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'ออกจากระบบ',
+            cancelButtonText: 'ยกเลิก'
+        }).then(function(result) {
+            if (!result.isConfirmed) return;
+            // หยุด session timer
+            if (sessionTimer) clearTimeout(sessionTimer);
+            if (warningTimer) clearTimeout(warningTimer);
+            currentRole = '';
+            currentUser = '';
+            currentPage = 1;
+            currentPageLicense = 1;
+            document.getElementById("username").value = "";
+            document.getElementById("password").value = "";
+            var btn = document.getElementById("btn-login-submit");
+            if (btn) { btn.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>เข้าสู่ระบบหลังบ้าน'; btn.disabled = false; }
+            var err = document.getElementById("login-error");
+            if (err) err.classList.add("d-none");
+            ['tab-pet','tab-license','tab-settings','tab-log'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.style.display = '';
+            });
+            document.getElementById('tab-log').style.display = 'none';
+            document.getElementById("login-section").classList.remove("d-none");
+            document.getElementById("admin-dashboard").classList.add("d-none");
         });
-        document.getElementById('tab-log').style.display = 'none';
-        document.getElementById("login-section").classList.remove("d-none");
-        document.getElementById("admin-dashboard").classList.add("d-none");
     }
 
     // ===== SECTION SWITCHING =====
@@ -891,36 +950,43 @@
         renderPagination(dataArray.length, tbodyId);
     }
 
-    function renderPagination(total, tbodyId) {
+    function renderPagination(total, tbodyId, dataArray, showDate) {
         var paginId = tbodyId + '-paginator';
-        var existing = document.getElementById(paginId);
-        if (existing) existing.remove();
-        if (total <= PAGE_SIZE) return;
+        var paginator = document.getElementById(paginId);
+        if (!paginator) return;
+        if (total <= PAGE_SIZE) { paginator.innerHTML = ''; return; }
         var totalPages = Math.ceil(total / PAGE_SIZE);
-        var paginator = document.createElement('div');
-        paginator.id = paginId;
-        paginator.style.cssText = 'display:flex; justify-content:center; align-items:center; gap:8px; padding:12px 0; flex-wrap:wrap;';
         var html = '';
         html += '<button class="btn btn-sm btn-outline-secondary" style="border-radius:8px;" onclick="changePage(' + (currentPage-1) + ', \'' + tbodyId + '\')" ' + (currentPage===1?'disabled':'') + '>‹ ก่อนหน้า</button>';
-        for (var p = 1; p <= totalPages; p++) {
+        // แสดงแค่ปุ่มหน้าที่อยู่ใกล้ๆ
+        var startP = Math.max(1, currentPage-2);
+        var endP = Math.min(totalPages, currentPage+2);
+        if (startP > 1) html += '<span class="text-muted px-1">...</span>';
+        for (var p = startP; p <= endP; p++) {
             var active = p === currentPage ? 'btn-primary' : 'btn-outline-primary';
             html += '<button class="btn btn-sm ' + active + '" style="border-radius:8px; min-width:36px;" onclick="changePage(' + p + ', \'' + tbodyId + '\')">' + p + '</button>';
         }
+        if (endP < totalPages) html += '<span class="text-muted px-1">...</span>';
         html += '<button class="btn btn-sm btn-outline-secondary" style="border-radius:8px;" onclick="changePage(' + (currentPage+1) + ', \'' + tbodyId + '\')" ' + (currentPage===totalPages?'disabled':'') + '>ถัดไป ›</button>';
-        html += '<span style="font-size:0.82rem; color:#64748b; margin-left:4px;">รวม ' + total + ' รายการ</span>';
+        html += '<span style="font-size:0.82rem; color:#64748b; margin-left:4px;">หน้า ' + currentPage + '/' + totalPages + ' (รวม ' + total + ' รายการ)</span>';
         paginator.innerHTML = html;
-        var tbody = document.getElementById(tbodyId);
-        if (tbody && tbody.parentElement && tbody.parentElement.parentElement) {
-            tbody.parentElement.parentElement.parentElement.appendChild(paginator);
-        }
     }
 
+    // currentPageLicense แยกจาก currentPage ของทำหมัน
+    var currentPageLicense = 1;
+
     function changePage(page, tbodyId) {
-        var totalData = globalAdminData.length;
-        var totalPages = Math.ceil(totalData / PAGE_SIZE);
-        if (page < 1 || page > totalPages) return;
-        currentPage = page;
-        renderTable(globalAdminData, 'admin-tbody', true);
+        if (tbodyId === 'admin-tbody') {
+            var totalPages = Math.ceil(globalAdminData.length / PAGE_SIZE);
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            renderTable(globalAdminData, 'admin-tbody', true);
+        } else if (tbodyId === 'license-tbody') {
+            var totalPages2 = Math.ceil(globalLicenseData.length / PAGE_SIZE);
+            if (page < 1 || page > totalPages2) return;
+            currentPageLicense = page;
+            renderLicenseTable(globalLicenseData);
+        }
     }
 
     // ===== ACTIVITY LOG =====
@@ -1237,14 +1303,18 @@
         var tbody = document.getElementById('license-tbody');
         if (!data || data.length === 0) {
             tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-muted">ยังไม่มีข้อมูลใบอนุญาต</td></tr>';
+            var paginator = document.getElementById('license-tbody-paginator');
+            if (paginator) paginator.innerHTML = '';
             return;
         }
-        // d[0]=prefix d[1]=firstname d[2]=lastname d[3]=business d[4]=type
-        // d[5]=status d[6]=issue d[7]=expire d[8]=idcard d[9]=rownum d[10]=pickup
+        var totalPages = Math.ceil(data.length / PAGE_SIZE);
+        if (currentPageLicense > totalPages) currentPageLicense = 1;
+        var start = (currentPageLicense - 1) * PAGE_SIZE;
+        var pageData = data.slice(start, start + PAGE_SIZE);
         var sColor = { 'อนุมัติแล้ว':'success','รอดำเนินการ':'warning','อยู่ระหว่างพิจารณา':'primary','ไม่อนุมัติ':'danger','หมดอายุ':'secondary' };
         var html = '';
-        for (var i = 0; i < data.length; i++) {
-            var d = data[i];
+        for (var i = 0; i < pageData.length; i++) {
+            var d = pageData[i];
             var bc = sColor[d[5]] || 'secondary';
             var rowNum = d[9];
             var fullName = ((d[0]||'') + (d[1]||'') + ' ' + (d[2]||'')).trim();
@@ -1253,7 +1323,7 @@
                 ? '<span class="badge bg-success"><i class="fas fa-check me-1"></i>มารับแล้ว</span>'
                 : '<span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i>ยังไม่มารับ</span>';
             html += '<tr>';
-            html += '<td class="text-center text-muted fw-bold">' + (i+1) + '</td>';
+            html += '<td class="text-center text-muted fw-bold">' + (start + i + 1) + '</td>';
             html += '<td>' + fullName + '</td>';
             html += '<td>' + (d[3]||'-') + '</td>';
             html += '<td style="font-size:0.82rem; max-width:180px;">' + (d[4]||'-') + '</td>';
@@ -1267,12 +1337,14 @@
             html += '</div></td></tr>';
         }
         tbody.innerHTML = html;
+        renderPagination(data.length, 'license-tbody');
     }
 
     function clearLicenseFilter() {
         document.getElementById('license-admin-search').value = '';
         document.getElementById('license-filter-issue').value = '';
         document.getElementById('license-filter-expire').value = '';
+        currentPageLicense = 1;
         filterLicenseTable();
     }
 
@@ -1298,8 +1370,10 @@
         } else {
             infoEl.classList.add('d-none');
         }
+        currentPageLicense = 1;
         renderLicenseTable(filtered);
     }
+
 
     function showLicenseForm(data) {
         document.getElementById('license-form-wrap').classList.remove('d-none');
