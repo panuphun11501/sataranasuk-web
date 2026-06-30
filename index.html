@@ -584,6 +584,7 @@
           }
 
           var galleryDataGlobal = [];
+          var galleryLoaded = false; // [perf fix] flag กันเรียก getGalleryData ซ้ำ
           var globalData = [];
           var currentStatusFilter = 'ทั้งหมด';
           // [S2 fix] เก็บข้อมูลบัตรคิวในรูป array แทนการ embed ใน onclick attribute
@@ -642,7 +643,26 @@
               allBtns.forEach(btn => btn.classList.remove('active'));
               document.getElementById('tab-content-' + tabName).classList.remove('d-none');
               if(btnElement) btnElement.classList.add('active');
-              if(tabName === 'gallery') renderGallery();
+              // [perf fix] โหลดข้อมูลอัลบั้มแบบ lazy — เฉพาะตอนกดเข้าแท็บ "อัลบั้มภาพ" จริงๆ
+              // เดิมเรียก getGalleryData ทุกครั้งที่เปิดหน้าเว็บ (แม้ไม่เคยกดดูอัลบั้มเลย)
+              if(tabName === 'gallery') loadGalleryTab();
+          }
+
+          // [perf fix] เรียก getGalleryData ครั้งแรกที่ผู้ใช้กดแท็บอัลบั้มภาพเท่านั้น
+          // และเรียกแค่ครั้งเดียวต่อการเปิดหน้าเว็บ (cache ไว้ใน galleryDataGlobal)
+          function loadGalleryTab() {
+              if (galleryLoaded) { renderGallery(); return; }
+              var listView = document.getElementById('album-list-view');
+              listView.innerHTML = "<div class='text-center py-5 text-muted'><span class='spinner-border spinner-border-sm text-primary'></span> กำลังโหลดอัลบั้มภาพ...</div>";
+              callGAS("getGalleryData", null, function(res) {
+                  galleryLoaded = true;
+                  // [M2 fix] ตรวจสอบว่าเป็น Array จริงก่อนกำหนดค่า
+                  if(res && Array.isArray(res.gallery)) galleryDataGlobal = res.gallery;
+                  listView.innerHTML = "";
+                  renderGallery();
+              }, function() {
+                  listView.innerHTML = "<div class='alert alert-danger text-center py-4'>ไม่สามารถโหลดอัลบั้มภาพได้ กรุณาลองใหม่</div>";
+              });
           }
 
           function filterByStatus(status, btnElement, targetTab) {
@@ -700,11 +720,11 @@
                     }
                 }
             });
-            
-            callGAS("getGalleryData", null, function(res) {
-                // [M2 fix] ตรวจสอบว่าเป็น Array จริงก่อนกำหนดค่า
-                if(res && Array.isArray(res.gallery)) galleryDataGlobal = res.gallery;
-            });
+
+            // [perf fix] ย้าย getGalleryData ไปโหลดแบบ lazy ใน loadGalleryTab()
+            // (เรียกตอนกดแท็บ "อัลบั้มภาพ" เท่านั้น) — ดูฟังก์ชัน switchTab()/loadGalleryTab()
+            // เดิมเรียกตรงนี้ทุกครั้งที่เปิดหน้าเว็บ ทำให้ผู้ใช้ทุกคนต้องรอ Drive API
+            // แม้จะไม่ได้เปิดดูอัลบั้มเลยก็ตาม
 
             fetchData();
           });

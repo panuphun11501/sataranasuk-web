@@ -562,11 +562,18 @@
                     </div>
                 </div>
 
+                <!-- ปุ่มสลับมุมมอง -->
+                <div class="d-flex justify-content-end mb-2">
+                    <button class="btn btn-outline-secondary btn-sm" id="view-toggle-btn-main" onclick="toggleLicenseView('main')" style="border-radius:8px;">
+                        <i class="fas fa-th-large me-1"></i>สลับเป็นมุมมองการ์ด
+                    </button>
+                </div>
+
                 <!-- paginator บน -->
                 <div id="license-tbody-paginator" class="d-flex justify-content-center align-items-center gap-2 py-2 flex-wrap"></div>
 
                 <!-- ตาราง -->
-                <div class="table-wrapper table-responsive">
+                <div class="table-wrapper table-responsive" id="view-table-main">
                     <table class="table table-hover mb-0">
                         <thead>
                             <tr>
@@ -586,6 +593,8 @@
                         </tbody>
                     </table>
                 </div>
+                <!-- การ์ด -->
+                <div id="view-cards-main" class="d-none"></div>
                 <div id="license-tbody-paginator-bottom" class="d-flex justify-content-center align-items-center gap-2 py-2 flex-wrap"></div>
             </div>
             <!-- ===== SECTION: LICENSE EXPIRING ===== -->
@@ -613,8 +622,13 @@
             </div>
 
             <div id="section-license-pending" class="page-section">
-                <h5 style="color:#0f2c59;font-weight:700;" class="mb-3"><i class="fas fa-hourglass-half text-warning me-2"></i>รออนุมัติ</h5>
-                <div class="table-wrapper table-responsive">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                    <h5 style="color:#0f2c59;font-weight:700;margin:0;"><i class="fas fa-hourglass-half text-warning me-2"></i>รออนุมัติ</h5>
+                    <button class="btn btn-outline-secondary btn-sm" id="view-toggle-btn-pending" onclick="toggleLicenseView('pending')" style="border-radius:8px;">
+                        <i class="fas fa-th-large me-1"></i>สลับเป็นมุมมองการ์ด
+                    </button>
+                </div>
+                <div class="table-wrapper table-responsive" id="view-table-pending">
                     <table class="table table-hover mb-0">
                         <thead><tr>
                             <th class="text-center">#</th><th>ชื่อ-สกุล</th><th>สถานประกอบการ</th>
@@ -623,11 +637,17 @@
                         <tbody id="tbody-license-pending"></tbody>
                     </table>
                 </div>
+                <div id="view-cards-pending" class="d-none"></div>
             </div>
 
             <div id="section-license-approved" class="page-section">
-                <h5 style="color:#0f2c59;font-weight:700;" class="mb-3"><i class="fas fa-check-circle text-success me-2"></i>อนุมัติแล้ว</h5>
-                <div class="table-wrapper table-responsive">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                    <h5 style="color:#0f2c59;font-weight:700;margin:0;"><i class="fas fa-check-circle text-success me-2"></i>อนุมัติแล้ว</h5>
+                    <button class="btn btn-outline-secondary btn-sm" id="view-toggle-btn-approved" onclick="toggleLicenseView('approved')" style="border-radius:8px;">
+                        <i class="fas fa-th-large me-1"></i>สลับเป็นมุมมองการ์ด
+                    </button>
+                </div>
+                <div class="table-wrapper table-responsive" id="view-table-approved">
                     <table class="table table-hover mb-0">
                         <thead><tr>
                             <th class="text-center">#</th><th>ชื่อ-สกุล</th><th>สถานประกอบการ</th>
@@ -636,12 +656,20 @@
                         <tbody id="tbody-license-approved"></tbody>
                     </table>
                 </div>
+                <div id="view-cards-approved" class="d-none"></div>
             </div>
 
             <div id="section-license-not-pickup" class="page-section">
-                <h5 style="color:#0f2c59;font-weight:700;" class="mb-3"><i class="fas fa-clock text-warning me-2"></i>อนุมัติแล้วแต่ยังไม่ได้มารับใบอนุญาต</h5>
-                <p class="text-muted mb-3" style="font-size:0.88rem;">รายชื่อผู้ประกอบการที่ใบอนุญาตอนุมัติแล้ว แต่ยังไม่ได้มารับ — ควรติดต่อแจ้งให้มารับโดยเร็ว</p>
-                <div class="table-wrapper table-responsive">
+                <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+                    <div>
+                        <h5 style="color:#0f2c59;font-weight:700;" class="mb-1"><i class="fas fa-clock text-warning me-2"></i>อนุมัติแล้วแต่ยังไม่ได้มารับใบอนุญาต</h5>
+                        <p class="text-muted mb-0" style="font-size:0.88rem;">รายชื่อผู้ประกอบการที่ใบอนุญาตอนุมัติแล้ว แต่ยังไม่ได้มารับ — ควรติดต่อแจ้งให้มารับโดยเร็ว</p>
+                    </div>
+                    <button class="btn btn-outline-secondary btn-sm" id="view-toggle-btn-notpickup" onclick="toggleLicenseView('notpickup')" style="border-radius:8px;">
+                        <i class="fas fa-th-large me-1"></i>สลับเป็นมุมมองการ์ด
+                    </button>
+                </div>
+                <div class="table-wrapper table-responsive" id="view-table-notpickup">
                     <table class="table table-hover mb-0">
                         <thead><tr>
                             <th class="text-center">#</th><th>ชื่อ-สกุล</th><th>สถานประกอบการ</th>
@@ -650,12 +678,20 @@
                         <tbody id="tbody-license-not-pickup"></tbody>
                     </table>
                 </div>
+                <div id="view-cards-notpickup" class="d-none"></div>
             </div>
 
             <div id="section-license-expired" class="page-section">
-                <h5 style="color:#0f2c59;font-weight:700;" class="mb-3"><i class="fas fa-calendar-times text-danger me-2"></i>หมดอายุ</h5>
-                <p class="text-muted mb-3" style="font-size:0.88rem;">รายชื่อผู้ประกอบการที่ใบอนุญาตหมดอายุแล้ว — ควรติดต่อให้ต่ออายุโดยเร็ว</p>
-                <div class="table-wrapper table-responsive">
+                <div class="d-flex justify-content-between align-items-start mb-3 flex-wrap gap-2">
+                    <div>
+                        <h5 style="color:#0f2c59;font-weight:700;" class="mb-1"><i class="fas fa-calendar-times text-danger me-2"></i>หมดอายุ</h5>
+                        <p class="text-muted mb-0" style="font-size:0.88rem;">รายชื่อผู้ประกอบการที่ใบอนุญาตหมดอายุแล้ว — ควรติดต่อให้ต่ออายุโดยเร็ว</p>
+                    </div>
+                    <button class="btn btn-outline-secondary btn-sm" id="view-toggle-btn-expired" onclick="toggleLicenseView('expired')" style="border-radius:8px;">
+                        <i class="fas fa-th-large me-1"></i>สลับเป็นมุมมองการ์ด
+                    </button>
+                </div>
+                <div class="table-wrapper table-responsive" id="view-table-expired">
                     <table class="table table-hover mb-0">
                         <thead><tr>
                             <th class="text-center">#</th><th>ชื่อ-สกุล</th><th>สถานประกอบการ</th>
@@ -664,6 +700,7 @@
                         <tbody id="tbody-license-expired"></tbody>
                     </table>
                 </div>
+                <div id="view-cards-expired" class="d-none"></div>
             </div>
 
             <!-- ===== SECTION: LICENSE MAP ===== -->
@@ -1267,6 +1304,90 @@
     var subDataNotPickup = [];
     var subDataExpired   = [];
 
+    // ===== สลับมุมมองตาราง/การ์ด สำหรับตารางใบอนุญาตทุกตัว =====
+    var licenseViewMode  = { main:'table', pending:'table', approved:'table', notpickup:'table', expired:'table' };
+    var licenseSectionMeta = {}; // key -> { data, dataKeyVarName, start }
+    var TBODY_TO_VIEWKEY = {
+        'tbody-license-pending':    'pending',
+        'tbody-license-approved':  'approved',
+        'tbody-license-not-pickup':'notpickup',
+        'tbody-license-expired':   'expired'
+    };
+
+    function setLicenseSectionMeta(key, data, dataKeyVarName, start) {
+        licenseSectionMeta[key] = { data: data || [], dataKeyVarName: dataKeyVarName, start: start || 0 };
+        if (licenseViewMode[key] === 'card') renderLicenseCardsForSection(key);
+    }
+
+    function toggleLicenseView(key) {
+        var mode  = licenseViewMode[key] === 'table' ? 'card' : 'table';
+        licenseViewMode[key] = mode;
+        var tableEl = document.getElementById('view-table-' + key);
+        var cardEl  = document.getElementById('view-cards-' + key);
+        var btn     = document.getElementById('view-toggle-btn-' + key);
+        if (mode === 'card') {
+            if (tableEl) tableEl.classList.add('d-none');
+            if (cardEl)  cardEl.classList.remove('d-none');
+            if (btn) btn.innerHTML = '<i class="fas fa-table me-1"></i>สลับเป็นมุมมองตาราง';
+            renderLicenseCardsForSection(key);
+        } else {
+            if (tableEl) tableEl.classList.remove('d-none');
+            if (cardEl)  cardEl.classList.add('d-none');
+            if (btn) btn.innerHTML = '<i class="fas fa-th-large me-1"></i>สลับเป็นมุมมองการ์ด';
+        }
+    }
+
+    function renderLicenseCardsForSection(key) {
+        var meta   = licenseSectionMeta[key];
+        var cardEl = document.getElementById('view-cards-' + key);
+        if (!cardEl) return;
+        if (!meta || !meta.data || meta.data.length === 0) {
+            cardEl.innerHTML = '<div class="text-center py-4 text-muted">ไม่พบข้อมูล</div>';
+            return;
+        }
+        var html = '<div class="row g-3">';
+        for (var i = 0; i < meta.data.length; i++) {
+            html += renderLicenseCardHtml(meta.data[i], i, meta.dataKeyVarName, meta.start);
+        }
+        html += '</div>';
+        cardEl.innerHTML = html;
+    }
+
+    // การ์ดผู้ประกอบการ — สไตล์เดียวกับหน้าบ้าน (index.html searchLicense) แต่เพิ่มปุ่มจัดการที่แถวล่างสุด
+    function renderLicenseCardHtml(d, i, dataKeyVarName, start) {
+        var sColor = { 'อนุมัติแล้ว':'#059669','รอดำเนินการ':'#d97706','อยู่ระหว่างพิจารณา':'#0369a1','ไม่อนุมัติ':'#dc2626','หมดอายุ':'#64748b' };
+        var sIcon  = { 'อนุมัติแล้ว':'fa-check-circle','รอดำเนินการ':'fa-clock','อยู่ระหว่างพิจารณา':'fa-hourglass-half','ไม่อนุมัติ':'fa-times-circle','หมดอายุ':'fa-calendar-times' };
+        var rowNum    = d[9];
+        var fullName  = esc(((d[0]||'')+(d[1]||'')+' '+(d[2]||'')).trim());
+        var statusKey = d[5] || '';
+        var c  = sColor[statusKey] || '#64748b';
+        var ic = sIcon[statusKey]  || 'fa-info-circle';
+        var pickup = d[10] || 'ยังไม่ได้มารับใบอนุญาต';
+        var pickupHtml = pickup === 'มารับใบอนุญาตแล้ว'
+            ? '<span style="background:#dcfce7; color:#166534; border:1px solid #bbf7d0; padding:3px 10px; border-radius:20px; font-size:0.82rem; font-weight:600;"><i class="fas fa-check-circle me-1"></i>มารับใบอนุญาตแล้ว</span>'
+            : '<span style="background:#fef9c3; color:#854d0e; border:1px solid #fde047; padding:3px 10px; border-radius:20px; font-size:0.82rem; font-weight:600;"><i class="fas fa-clock me-1"></i>ยังไม่ได้มารับใบอนุญาต</span>';
+
+        var html = '<div class="col-12 col-lg-6"><div class="content-card p-4 h-100" style="border-radius:12px; border-left:5px solid ' + c + ';">';
+        html += '<div class="d-flex justify-content-between align-items-start flex-wrap gap-2">';
+        html += '<div><h6 style="font-weight:700; color:#0f2c59; margin:0 0 4px;">' + (start + i + 1) + '. ' + fullName + '</h6>';
+        html += '<p class="mb-1" style="color:#475569; font-size:0.9rem;"><i class="fas fa-store me-1"></i>' + esc(d[3]||'-') + '</p>';
+        html += '<p class="mb-0" style="color:#64748b; font-size:0.85rem;"><i class="fas fa-tag me-1"></i>' + esc(d[4]||'-') + '</p></div>';
+        html += '<span style="background:' + c + '1a; color:' + c + '; border:1px solid ' + c + '4d; padding:5px 14px; border-radius:20px; font-size:0.82rem; font-weight:600; white-space:nowrap;"><i class="fas ' + ic + ' me-1"></i>' + esc(statusKey||'-') + '</span></div>';
+        html += '<hr style="margin:12px 0; border-color:#f1f5f9;">';
+        html += '<div class="row g-2" style="font-size:0.88rem; color:#64748b;">';
+        html += '<div class="col-6"><i class="fas fa-calendar-plus me-1 text-success"></i>วันที่ออก: <b style="color:#334155;">' + esc(d[6]||'-') + '</b></div>';
+        html += '<div class="col-6"><i class="fas fa-calendar-times me-1 text-danger"></i>วันหมดอายุ: <b style="color:#334155;">' + esc(d[7]||'-') + '</b></div>';
+        html += '<div class="col-12 mt-1"><i class="fas fa-hand-holding me-1"></i>สถานะรับใบ: ' + pickupHtml + '</div></div>';
+        html += '<hr style="margin:12px 0; border-color:#f1f5f9;">';
+        // ปุ่มจัดการ — วางไว้แถวล่างสุดของการ์ดตามที่กำหนด
+        html += '<div class="action-btns justify-content-end">';
+        html += '<button class="btn btn-outline-success btn-sm" onclick="openMapModal(' + dataKeyVarName + '[' + i + '])" title="ดูแผนที่"><i class="fas fa-map-marker-alt"></i> แผนที่</button>';
+        html += '<button class="btn btn-outline-primary btn-sm" onclick="showLicenseForm(' + dataKeyVarName + '[' + i + '])"><i class="fas fa-edit"></i> แก้ไข</button>';
+        html += '<button class="btn btn-outline-danger btn-sm" onclick="confirmDeleteLicense(' + rowNum + ')"><i class="fas fa-trash"></i> ลบ</button>';
+        html += '</div></div></div>';
+        return html;
+    }
+
     // สร้าง dropdown วัน 1-31
     (function() {
         ['lf-issue-day','lf-expire-day'].forEach(function(id) {
@@ -1412,6 +1533,8 @@
     function renderLicenseSubTable(data, tbodyId, dataKey) {
         var tbody = document.getElementById(tbodyId);
         if (!tbody) return;
+        var viewKey = TBODY_TO_VIEWKEY[tbodyId];
+        if (viewKey) setLicenseSectionMeta(viewKey, data, dataKey, 0);
         if (!data || data.length === 0) {
             tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-muted">ไม่พบข้อมูล</td></tr>';
             return;
@@ -1452,6 +1575,7 @@
             tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-muted">ยังไม่มีข้อมูลใบอนุญาต</td></tr>';
             var paginator = document.getElementById('license-tbody-paginator');
             if (paginator) paginator.innerHTML = '';
+            setLicenseSectionMeta('main', [], 'licensePageData', 0);
             return;
         }
         var totalPages = Math.ceil(data.length / PAGE_SIZE);
@@ -1460,6 +1584,7 @@
         var pageData = data.slice(start, start + PAGE_SIZE);
         // Issue 3 fix: เก็บ pageData ไว้ใน licensePageData แล้วใช้ index แทน JSON.stringify
         licensePageData = pageData;
+        setLicenseSectionMeta('main', pageData, 'licensePageData', start);
         var sColor = { 'อนุมัติแล้ว':'success','รอดำเนินการ':'warning','อยู่ระหว่างพิจารณา':'primary','ไม่อนุมัติ':'danger','หมดอายุ':'secondary' };
         var html = '';
         for (var i = 0; i < pageData.length; i++) {
@@ -1589,7 +1714,24 @@
         Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
         var action = rowNum ? "updateLicense" : "saveLicense";
         if (rowNum) form.rowNumber = parseInt(rowNum);
+        // [bug fix] เพิ่ม timeout + failureHandler — ก่อนหน้านี้ไม่มี failureHandler ส่งให้ callGAS
+        // ทำให้ถ้า fetch() ล้มเหลว (เช่น CORS error) modal "กำลังบันทึก..." จะค้างไปตลอด
+        // ทั้งที่ฝั่งเซิร์ฟเวอร์อาจบันทึกข้อมูลสำเร็จไปแล้ว (เช่น LINE notification ส่งออกไปแล้ว)
+        var saveTimedOut = false;
+        var saveTimeoutId = setTimeout(function() {
+            saveTimedOut = true;
+            Swal.fire({
+                icon: 'warning',
+                title: 'การเชื่อมต่อขัดข้อง',
+                html: 'ไม่ได้รับการตอบกลับจากเซิร์ฟเวอร์ภายในเวลาที่กำหนด<br><b>ข้อมูลอาจถูกบันทึกสำเร็จแล้วฝั่งเซิร์ฟเวอร์</b> แม้เบราว์เซอร์จะไม่ได้รับผลลัพธ์<br><br>กรุณาปิดหน้าต่างนี้แล้วรีเฟรชข้อมูลเพื่อตรวจสอบก่อนบันทึกซ้ำ',
+                confirmButtonText: 'ตกลง'
+            });
+            hideLicenseForm();
+            loadLicenseData();
+        }, 15000);
         callGAS(action, form, function(res) {
+            if (saveTimedOut) return; // กันกรณี timeout ยิงไปแล้วแต่ response มาทีหลัง
+            clearTimeout(saveTimeoutId);
             if (res.success) {
                 Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ!', timer: 1500, showConfirmButton: false });
                 hideLicenseForm();
@@ -1597,6 +1739,18 @@
             } else {
                 Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: res.message });
             }
+        }, function(err) {
+            if (saveTimedOut) return; // กันกรณี timeout ยิงไปแล้วแต่ catch มาทีหลัง
+            clearTimeout(saveTimeoutId);
+            console.error('submitLicenseForm fetch error:', err);
+            Swal.fire({
+                icon: 'warning',
+                title: 'การเชื่อมต่อขัดข้อง',
+                html: 'เกิดข้อผิดพลาดในการเชื่อมต่อ (เช่น CORS / เครือข่ายขัดข้อง)<br><b>ข้อมูลอาจถูกบันทึกสำเร็จแล้วฝั่งเซิร์ฟเวอร์</b> แม้เบราว์เซอร์จะไม่ได้รับผลลัพธ์<br><br>กรุณาปิดหน้าต่างนี้แล้วรีเฟรชข้อมูลเพื่อตรวจสอบก่อนบันทึกซ้ำ',
+                confirmButtonText: 'ตกลง'
+            });
+            hideLicenseForm();
+            loadLicenseData();
         });
     }
 
@@ -1829,13 +1983,36 @@
         }).then(function(result) {
             if (result.isConfirmed) {
                 Swal.fire({ title: 'กำลังลบ...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+                // [bug fix] เพิ่ม timeout + failureHandler กันโมดัล "กำลังลบ..." ค้าง เมื่อ fetch() ล้มเหลว (เช่น CORS error)
+                var delTimedOut = false;
+                var delTimeoutId = setTimeout(function() {
+                    delTimedOut = true;
+                    Swal.fire({
+                        icon: 'warning', title: 'การเชื่อมต่อขัดข้อง',
+                        html: 'ไม่ได้รับการตอบกลับจากเซิร์ฟเวอร์ภายในเวลาที่กำหนด<br><b>ข้อมูลอาจถูกลบสำเร็จแล้วฝั่งเซิร์ฟเวอร์</b> กรุณารีเฟรชข้อมูลเพื่อตรวจสอบ',
+                        confirmButtonText: 'ตกลง'
+                    });
+                    loadLicenseData();
+                }, 15000);
                 callGAS("deleteLicense", { rowNumber: rowNum, username: currentUser }, function(res) {
+                    if (delTimedOut) return;
+                    clearTimeout(delTimeoutId);
                     if (res.success) {
                         Swal.fire({ icon: 'success', title: 'ลบสำเร็จ!', timer: 1200, showConfirmButton: false });
                         loadLicenseData();
                     } else {
                         Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: res.message });
                     }
+                }, function(err) {
+                    if (delTimedOut) return;
+                    clearTimeout(delTimeoutId);
+                    console.error('confirmDeleteLicense fetch error:', err);
+                    Swal.fire({
+                        icon: 'warning', title: 'การเชื่อมต่อขัดข้อง',
+                        html: 'เกิดข้อผิดพลาดในการเชื่อมต่อ<br><b>ข้อมูลอาจถูกลบสำเร็จแล้วฝั่งเซิร์ฟเวอร์</b> กรุณารีเฟรชข้อมูลเพื่อตรวจสอบ',
+                        confirmButtonText: 'ตกลง'
+                    });
+                    loadLicenseData();
                 });
             }
         });
@@ -1880,13 +2057,36 @@
 
     function _doChangeStatus(rowNumber, newStatus, newDate) {
         Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+        // [bug fix] เพิ่ม timeout + failureHandler กันโมดัล "กำลังบันทึก..." ค้าง เมื่อ fetch() ล้มเหลว (เช่น CORS error)
+        var stTimedOut = false;
+        var stTimeoutId = setTimeout(function() {
+            stTimedOut = true;
+            Swal.fire({
+                icon: 'warning', title: 'การเชื่อมต่อขัดข้อง',
+                html: 'ไม่ได้รับการตอบกลับจากเซิร์ฟเวอร์ภายในเวลาที่กำหนด<br><b>ข้อมูลอาจถูกบันทึกสำเร็จแล้วฝั่งเซิร์ฟเวอร์</b> กรุณารีเฟรชข้อมูลเพื่อตรวจสอบก่อนทำซ้ำ',
+                confirmButtonText: 'ตกลง'
+            });
+            loadData();
+        }, 15000);
         callGAS("updateDataStatus", { rowNumber: rowNumber, newStatus: newStatus, newDate: newDate, username: currentUser }, function(res) {
+            if (stTimedOut) return;
+            clearTimeout(stTimeoutId);
             if(res.success) {
                 Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ!', timer: 1500, showConfirmButton: false });
                 loadData();
             } else {
                 Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: res.message });
             }
+        }, function(err) {
+            if (stTimedOut) return;
+            clearTimeout(stTimeoutId);
+            console.error('_doChangeStatus fetch error:', err);
+            Swal.fire({
+                icon: 'warning', title: 'การเชื่อมต่อขัดข้อง',
+                html: 'เกิดข้อผิดพลาดในการเชื่อมต่อ<br><b>ข้อมูลอาจถูกบันทึกสำเร็จแล้วฝั่งเซิร์ฟเวอร์</b> กรุณารีเฟรชข้อมูลเพื่อตรวจสอบก่อนทำซ้ำ',
+                confirmButtonText: 'ตกลง'
+            });
+            loadData();
         });
     }
 </script>
