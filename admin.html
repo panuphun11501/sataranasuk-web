@@ -264,7 +264,10 @@
                 </div>
 
                 <div class="content-card mb-3">
-                    <input type="text" id="admin-search" class="form-control" placeholder="🔍  ค้นหาชื่อ หรือเบอร์โทร..." oninput="filterTable()" style="border-radius:10px;">
+                    <div class="d-flex gap-2 flex-wrap">
+                        <input type="text" id="admin-search" class="form-control" placeholder="🔍  ค้นหาชื่อ หรือเบอร์โทร..." oninput="filterTable()" style="border-radius:10px; flex:1; min-width:200px;">
+                        <button class="btn btn-outline-success" onclick="exportQueueCSV()" style="border-radius:10px; white-space:nowrap;"><i class="fas fa-file-csv me-1"></i>ส่งออก CSV</button>
+                    </div>
                 </div>
 
                 <div id="admin-tbody-paginator" class="d-flex justify-content-center align-items-center gap-2 py-2 flex-wrap"></div>
@@ -562,8 +565,11 @@
                     </div>
                 </div>
 
-                <!-- ปุ่มสลับมุมมอง -->
-                <div class="d-flex justify-content-end mb-2">
+                <!-- ปุ่มสลับมุมมอง / ส่งออก -->
+                <div class="d-flex justify-content-end gap-2 mb-2">
+                    <button class="btn btn-outline-success btn-sm" onclick="exportLicenseCSV()" style="border-radius:8px;">
+                        <i class="fas fa-file-csv me-1"></i>ส่งออก CSV
+                    </button>
                     <button class="btn btn-outline-secondary btn-sm" id="view-toggle-btn-main" onclick="toggleLicenseView('main')" style="border-radius:8px;">
                         <i class="fas fa-th-large me-1"></i>สลับเป็นมุมมองการ์ด
                     </button>
@@ -950,7 +956,10 @@
         err.classList.add("d-none");
         callGAS("checkAdminLogin", { username: user, password: pass }, function(response) {
             if(response.success) {
-                currentRole = response.role || "superadmin";
+                // [security fix] เดิม fallback "superadmin" ตอน role ว่าง — เคยมีบัค server-side
+                // ที่ทำให้กรณีนี้เกิดขึ้นได้ ตอนนี้แก้ที่ server แล้ว (checkAdminLogin จะไม่ success
+                // ถ้า role ว่าง) แต่กันไว้อีกชั้น ไม่ให้ฝั่ง client เผลอให้สิทธิ์สูงสุดเองเด็ดขาด
+                currentRole = response.role || "";
                 currentUser = response.displayName || user;
                 document.getElementById("login-section").classList.add("d-none");
                 document.getElementById("admin-dashboard").classList.remove("d-none");
@@ -1293,6 +1302,55 @@
         });
         currentPage = 1;
         renderTable(filtered, 'admin-tbody', true);
+    }
+
+    // ====================================================
+    // 📤 ส่งออก CSV (Export) — ตารางคิวทำหมัน
+    // ส่งออกเฉพาะข้อมูลที่ตรงกับคำค้นที่กรองอยู่ ณ ขณะนั้น (ถ้าไม่ได้ค้นหาอะไรเลย = ส่งออกทั้งหมด)
+    // ====================================================
+    function _downloadCSV(filename, headers, rows) {
+        // [export] ใส่ BOM (﻿) นำหน้า เพื่อให้ Excel เปิดไฟล์ CSV ภาษาไทยแล้วไม่เป็นตัวอักษรมั่ว
+        var csv = "﻿" + headers.map(_csvEscape).join(",") + "\r\n";
+        rows.forEach(function(r) {
+            csv += r.map(_csvEscape).join(",") + "\r\n";
+        });
+        var blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function _csvEscape(val) {
+        var s = (val === null || val === undefined) ? "" : val.toString();
+        // ครอบด้วย "" เสมอ และ escape เครื่องหมาย " ที่อยู่ในข้อมูล ป้องกันคอลัมน์เลื่อนตอนมีจุลภาค/ขึ้นบรรทัดใหม่ในข้อมูล
+        return '"' + s.replace(/"/g, '""') + '"';
+    }
+
+    function exportQueueCSV() {
+        if (!globalAdminData || globalAdminData.length === 0) {
+            Swal.fire('ไม่มีข้อมูล', 'ยังไม่มีข้อมูลให้ส่งออก', 'info');
+            return;
+        }
+        var keyword = (document.getElementById("admin-search").value || "").toLowerCase();
+        var filtered = keyword
+            ? globalAdminData.filter(function(row) { return row.some(function(cell) { return cell.toString().toLowerCase().includes(keyword); }); })
+            : globalAdminData;
+        var headers = ["วันเวลาลงทะเบียน","คำนำหน้า","ชื่อ-สกุล","สถานะ","วันที่นัดหมาย","เบอร์โทร","เลขบัตรประชาชน","ที่อยู่","สถานภาพสัตว์","จำนวนสัตว์ (ตัว)","รายละเอียดสัตว์"];
+        var rows = filtered.map(function(row) { return row.slice(0, 11); }); // ตัด rowNumber (คอลัมน์สุดท้าย) ออก ไม่ใช่ข้อมูลที่ผู้ใช้ต้องเห็น
+        var ts = Utilities_formatNowForFilename();
+        _downloadCSV("คิวทำหมัน_" + ts + ".csv", headers, rows);
+    }
+
+    // helper สร้าง timestamp สำหรับชื่อไฟล์ (ฝั่ง client ใช้ Date ปกติได้ ไม่ใช่ Apps Script)
+    function Utilities_formatNowForFilename() {
+        var d = new Date();
+        function p(n){ return n.toString().padStart(2,'0'); }
+        return d.getFullYear() + p(d.getMonth()+1) + p(d.getDate()) + "_" + p(d.getHours()) + p(d.getMinutes());
     }
 
     // ===== LICENSE SYSTEM =====
@@ -1649,6 +1707,29 @@
         renderLicenseTable(filtered);
     }
 
+    // ====================================================
+    // 📤 ส่งออก CSV (Export) — ตารางใบอนุญาต
+    // ส่งออกตามตัวกรอง (คำค้น/ปีที่ออก/ปีหมดอายุ) ที่กำลังใช้อยู่ ณ ขณะนั้น
+    // ====================================================
+    function exportLicenseCSV() {
+        if (!globalLicenseData || globalLicenseData.length === 0) {
+            Swal.fire('ไม่มีข้อมูล', 'ยังไม่มีข้อมูลให้ส่งออก', 'info');
+            return;
+        }
+        var kw     = (document.getElementById('license-admin-search').value || "").toLowerCase().trim();
+        var issue  = (document.getElementById('license-filter-issue').value || "").trim();
+        var expire = (document.getElementById('license-filter-expire').value || "").trim();
+        var filtered = globalLicenseData.filter(function(d) {
+            var matchKw     = !kw     || d.some(function(c) { return c.toString().toLowerCase().includes(kw); });
+            var matchIssue  = !issue  || (d[6]||'').includes(issue);
+            var matchExpire = !expire || (d[7]||'').includes(expire);
+            return matchKw && matchIssue && matchExpire;
+        });
+        var headers = ["คำนำหน้า","ชื่อ","นามสกุล","ชื่อสถานประกอบการ","ประเภท","สถานะ","วันที่ออก","วันหมดอายุ","เลขบัตรประชาชน"];
+        var rows = filtered.map(function(d) { return [d[0],d[1],d[2],d[3],d[4],d[5],d[6],d[7],d[8]]; });
+        var ts = Utilities_formatNowForFilename();
+        _downloadCSV("ใบอนุญาต_" + ts + ".csv", headers, rows);
+    }
 
     function showLicenseForm(data) {
         document.getElementById('license-form-wrap').classList.remove('d-none');

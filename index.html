@@ -182,26 +182,10 @@
                 <main class="col-12 main-content">
                     <div id="project-home" class="animation-fade-in">
                         <div class="content-card mb-5 p-0 shadow-sm" style="border-radius: 15px; overflow: hidden; border: 1px solid #e2e8f0;">
-                            <div id="homeCarousel" class="carousel slide" data-bs-ride="carousel">
-                              <div class="carousel-inner">
-                                <div class="carousel-item active">
-                                  <img src="https://images.unsplash.com/photo-1450778869180-41d0601e046e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" class="d-block w-100" alt="ประกาศ 1" style="height: 350px; object-fit: cover; filter: brightness(0.65);">
-                                  <div class="carousel-caption d-block">
-                                    <h3 style="font-weight: 700; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);"><i class="fas fa-laptop-house text-warning"></i> ยินดีต้อนรับสู่ E-Service</h3>
-                                    <p style="font-size: 1.1rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">กองสาธารณสุขและสิ่งแวดล้อม เทศบาลเมืองจันทนิมิต</p>
-                                  </div>
-                                </div>
-                                <div class="carousel-item">
-                                  <img src="https://images.unsplash.com/photo-1516734212829-d586146c8751?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" class="d-block w-100" alt="ประกาศ 2" style="height: 350px; object-fit: cover; filter: brightness(0.65);">
-                                  <div class="carousel-caption d-block">
-                                    <h3 style="font-weight: 700; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">โครงการทำหมันสุนัขและแมว</h3>
-                                    <p style="font-size: 1.1rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">ฟรี ไม่มีค่าใช้จ่าย สำหรับประชาชนในเขตพื้นที่</p>
-                                  </div>
-                                </div>
-                              </div>
-                              <button class="carousel-control-prev" type="button" data-bs-target="#homeCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
-                              <button class="carousel-control-next" type="button" data-bs-target="#homeCarousel" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
-                            </div>
+                            <!-- [เปลี่ยนเป็นภาพเดียวแบบนิ่ง] เดิมเป็น Bootstrap carousel เลื่อนสไลด์ได้ 2 รูป
+                                 ตอนนี้เปลี่ยนเป็นรูปอินโฟกราฟิกรูปเดียวของกองสาธารณสุขฯ ไม่มีปุ่มเลื่อน/ไม่ auto-slide
+                                 ไฟล์รูป: images/banner-home.png (ต้องอัปโหลดไฟล์นี้ไปไว้ในโฟลเดอร์เดียวกับเว็บบน Netlify) -->
+                            <img src="images/banner-home.png" class="d-block w-100" alt="กองสาธารณสุขและสิ่งแวดล้อม เทศบาลเมืองจันทนิมิต" style="display:block;">
                         </div>
                         <div class="text-center mb-4">
                             <h4 style="color: #0f2c59; font-weight: 700;">ระบบบริการประชาชนออนไลน์</h4>
@@ -705,8 +689,24 @@
             setTimeout(() => { document.getElementById('search').innerHTML = "ค้นหา / รีเฟรชข้อมูล"; }, 500);
           }
 
+          // [feature] ค้นหาแบบเรียลไทม์ — กรองข้อมูลทันทีตอนพิมพ์ (ไม่ต้องกดปุ่ม)
+          // กรองจาก globalData ที่อยู่ในเครื่องอยู่แล้ว (ดึงมาครั้งเดียวตอนโหลดหน้า)
+          // จึงไม่ต้องยิง request ไปเซิร์ฟเวอร์ซ้ำทุกครั้งที่พิมพ์ — เร็วและไม่เพิ่มโหลด backend
+          // ใส่ debounce 150ms กันกรองถี่เกินไปตอนพิมพ์เร็วๆ/พิมพ์ภาษาไทยผ่าน IME
+          var _liveSearchTimer = null;
+          function setupLiveSearch() {
+              var input = document.getElementById('searchtext');
+              if (!input) return;
+              input.addEventListener('input', function() {
+                  if (_liveSearchTimer) clearTimeout(_liveSearchTimer);
+                  _liveSearchTimer = setTimeout(applyFilters, 150);
+              });
+          }
+
           // ✅ โหลดข้อมูลเมื่อหน้าเว็บพร้อม (ใช้ callGAS แทน google.script.run)
           window.addEventListener("load", function() {
+            setupLiveSearch();
+
             callGAS("getBannerData", null, function(banner) {
                 if(banner.status === "เปิด" || banner.status === "ON") {
                     document.getElementById('announcement-banner').classList.remove('d-none');
@@ -986,6 +986,11 @@
               }
               resultDiv.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div><p class="mt-2 text-muted">กำลังค้นหา...</p></div>';
               callGAS("searchLicense", { keyword: keyword }, function(data) {
+                  // [anti-spam] เคสค้นหาถี่เกินไป backend จะตอบ {error: "..."} แทน array
+                  if (data && data.error) {
+                      resultDiv.innerHTML = '<div class="content-card p-4 text-center" style="border-radius:12px; border:1px solid #fcd34d; background:#fffbeb;"><i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i><p class="mb-0" style="color:#b45309;">' + esc(data.error) + '</p></div>';
+                      return;
+                  }
                   if (!data || data.length === 0) {
                       resultDiv.innerHTML = '<div class="content-card p-4 text-center" style="border-radius:12px;"><i class="fas fa-folder-open fa-3x text-muted mb-3"></i><h6 style="color:#64748b;">ไม่พบข้อมูล</h6><p class="text-muted mb-0">ไม่พบใบอนุญาตที่ตรงกับเลขบัตรประชาชนนี้<br>หากมีข้อสงสัยติดต่อ 039-311-073 ต่อ 304 (ฝ่ายบริหาร)</p></div>';
                       return;
