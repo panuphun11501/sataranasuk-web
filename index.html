@@ -782,21 +782,31 @@
 
           function createTable(dataArray) {
             if(dataArray && dataArray.length > 0){
-              // [S2 fix] รีเซ็ต pageTicketData ทุกครั้งที่ render ตารางใหม่
+              // [S2 fix] รีเซ็ต pageTicketData ทุกครั้งที่ render การ์ดใหม่
               pageTicketData = [];
-              var result = "<table class='table table-hover mt-3 table-custom bg-white' style='font-size:0.95rem'><thead style='white-space: nowrap'><tr>"+
-                           "<th class='text-center'>ลำดับ</th><th style='min-width: 160px;'>ชื่อ-สกุล</th>"+
-                           "<th class='text-center'>สถานะ</th><th class='text-center'>วันที่นัดหมาย</th>"+
-                           "<th style='min-width: 110px;'>เบอร์โทรศัพท์</th><th style='width: 20%; min-width: 150px;'>ที่อยู่</th>"+
-                           "<th class='text-center'>สถานภาพสัตว์</th><th class='text-center'>สัตว์เลี้ยง (ตัว)</th></tr></thead><tbody>";
+              // [ออกแบบใหม่] เปลี่ยนจากตาราง <table> เป็นการ์ดสไตล์เดียวกับ searchLicense()
+              // สีและไอคอนต่อสถานะ (เทียบเคียงกับ sColor/sIcon ของใบอนุญาต)
+              var qColor = {
+                  'อยู่ระหว่างการตรวจสอบ': '#64748b',
+                  'นัดหมายคิวแล้ว':       '#059669',
+                  'ทำเสร็จแล้ว':          '#0369a1',
+                  'ติดต่อไม่ได้':         '#475569',
+                  'รอดำเนินการ':          '#d97706'
+              };
+              var qIcon = {
+                  'อยู่ระหว่างการตรวจสอบ': 'fa-search',
+                  'นัดหมายคิวแล้ว':       'fa-calendar-check',
+                  'ทำเสร็จแล้ว':          'fa-check-circle',
+                  'ติดต่อไม่ได้':         'fa-phone-slash',
+                  'รอดำเนินการ':          'fa-clock'
+              };
+              var html = '<div class="row g-3 mt-1">';
               for(var i=0; i<dataArray.length; i++) {
                   var rawStatus = dataArray[i][3] ? dataArray[i][3].toString().trim() : "อยู่ระหว่างการตรวจสอบ";
-                  var badgeClass = rawStatus === "อยู่ระหว่างการตรวจสอบ" ? "bg-light text-secondary border" :
-                                   rawStatus === "นัดหมายคิวแล้ว" ? "bg-success" :
-                                   rawStatus === "ทำเสร็จแล้ว" ? "bg-primary" :
-                                   rawStatus === "ติดต่อไม่ได้" ? "bg-secondary" :
-                                   rawStatus === "รอดำเนินการ" ? "bg-warning text-dark" : "bg-danger";
-                  var trClass = (rawStatus.includes("ยกเลิก") || rawStatus.includes("นอกเขตพื้นที่")) ? " class='cancelled-row'" : (rawStatus === "ทำเสร็จแล้ว") ? " class='completed-row'" : "";
+                  var isCancelled = rawStatus.includes("ยกเลิก") || rawStatus.includes("นอกเขตพื้นที่");
+                  var c  = isCancelled ? '#dc2626' : (qColor[rawStatus] || '#dc2626');
+                  var ic = isCancelled ? 'fa-ban'  : (qIcon[rawStatus]  || 'fa-exclamation-circle');
+                  var cardStyle = "border-radius:12px; border-left:5px solid " + c + ";" + (isCancelled ? " opacity:0.65;" : "");
                   var nameText = esc((dataArray[i][1] ? dataArray[i][1].toString().trim() : "") + (dataArray[i][2] ? dataArray[i][2].toString().trim() : ""));
                   var dateText = dataArray[i][4] ? esc(dataArray[i][4].toString().trim()) : "<i class='text-muted'>รอจัดคิว</i>";
                   var rawPhone = dataArray[i][5] ? dataArray[i][5].toString().trim() : "";
@@ -816,18 +826,26 @@
                           phone:   safePhone,
                           petType: (dataArray[i][8]||'สัตว์มีเจ้าของ').toString().trim()
                       });
-                      ticketBtn = "<br><button class='btn btn-sm btn-outline-success mt-2' style='border-radius:20px; font-size:0.8rem;' " +
+                      ticketBtn = "<div class='col-12 mt-2'><button class='btn btn-sm btn-outline-success' style='border-radius:20px; font-size:0.85rem;' " +
                                   "onclick='downloadTicketByIndex(" + ticketIdx + ")'>" +
-                                  "<i class='fas fa-ticket-alt'></i> บัตรคิว</button>";
+                                  "<i class='fas fa-ticket-alt'></i> บัตรคิว</button></div>";
                   }
-                  result += "<tr" + trClass + "><td class='text-center fw-bold align-middle'>" + (i + 1) + "</td><td class='align-middle'>" + nameText + "</td>"+
-                            "<td class='text-center align-middle'><span class='badge rounded-pill " + badgeClass + "' style='font-weight: 400; padding: 6px 12px;'>" + esc(rawStatus) + "</span>" + ticketBtn + "</td>"+
-                            "<td class='align-middle text-center'>" + dateText + "</td><td class='align-middle'>" + safePhone + "</td>"+
-                            "<td class='align-middle text-truncate' style='max-width: 200px;' title='" + addressText + "'>" + addressText + "</td>"+
-                            "<td class='text-center align-middle'>" + petType + "</td><td class='text-center align-middle'>" + countText + "</td></tr>";
+                  html += '<div class="col-12 col-md-6"><div class="content-card p-4 h-100" style="' + cardStyle + '">';
+                  html += '<div class="d-flex justify-content-between align-items-start flex-wrap gap-2">';
+                  html += '<div><h6 style="font-weight:700; color:#0f2c59; margin:0 0 4px;"><i class="fas fa-user me-1 text-muted"></i>' + nameText + '</h6>';
+                  html += '<p class="mb-0" style="color:#64748b; font-size:0.85rem;"><i class="fas fa-paw me-1"></i>' + petType + ' &nbsp;·&nbsp; จำนวน ' + countText + ' ตัว</p></div>';
+                  html += '<span style="background:' + c + '1a; color:' + c + '; border:1px solid ' + c + '4d; padding:5px 14px; border-radius:20px; font-size:0.82rem; font-weight:600; white-space:nowrap;"><i class="fas ' + ic + ' me-1"></i>' + esc(rawStatus) + '</span></div>';
+                  html += '<hr style="margin:12px 0; border-color:#f1f5f9;">';
+                  html += '<div class="row g-2" style="font-size:0.88rem; color:#64748b;">';
+                  html += '<div class="col-12 col-sm-6"><i class="fas fa-calendar-day me-1 text-success"></i>วันที่นัดหมาย: <b style="color:#334155;">' + dateText + '</b></div>';
+                  html += '<div class="col-12 col-sm-6"><i class="fas fa-phone me-1 text-primary"></i>เบอร์โทรศัพท์: <b style="color:#334155;">' + (safePhone || '-') + '</b></div>';
+                  html += '<div class="col-12"><i class="fas fa-map-marker-alt me-1 text-danger"></i>ที่อยู่: <b style="color:#334155;">' + (addressText || '-') + '</b></div>';
+                  html += '</div>';
+                  html += ticketBtn;
+                  html += '</div></div>';
               }
-              result += "</tbody></table>";
-              document.getElementById('search-results').innerHTML = result;
+              html += '</div>';
+              document.getElementById('search-results').innerHTML = html;
             } else {
               document.getElementById('search-results').innerHTML = "<div class='alert alert-light text-center py-5 border'><i class='fas fa-folder-open fa-3x text-muted mb-3'></i><br>ไม่พบข้อมูลในหมวดหมู่นี้</div>";
             }

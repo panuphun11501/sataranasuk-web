@@ -244,6 +244,21 @@
                     </button>
                 </div>
 
+                <!-- [LINE ประกาศ] ส่ง Broadcast ให้ทุกคนที่เป็นเพื่อนกับ LINE OA ของเทศบาล (ใช้เป็นครั้งคราว เช่น ประกาศวันทำหมัน) -->
+                <div class="content-card mb-3" style="border-radius:12px; border-left:5px solid #06c755;">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="fab fa-line" style="color:#06c755; font-size:1.3rem;"></i>
+                        <h6 style="font-weight:700; color:#0f2c59; margin:0;">ส่งประกาศทาง LINE</h6>
+                    </div>
+                    <p class="text-muted mb-2" style="font-size:0.83rem;">ข้อความนี้จะถูกส่งแบบ Broadcast ให้ <b>ทุกคน</b> ที่เป็นเพื่อนกับ LINE OA ของเทศบาล เหมาะสำหรับประกาศเป็นครั้งคราว เช่น แจ้งวันที่ออกหน่วยทำหมันสุนัข/แมว</p>
+                    <div class="d-flex gap-2 flex-wrap align-items-start">
+                        <textarea id="pet-announcement-text" class="form-control" rows="2" placeholder="เช่น 📅 วันที่ 10 ก.ค. 2569 กองสาธารณสุขฯ จะออกหน่วยทำหมันสุนัข/แมว ที่ชุมชน... สนใจติดต่อ 039-311-073 ต่อ 304" style="border-radius:10px; flex:1; min-width:240px;"></textarea>
+                        <button class="btn btn-success" style="border-radius:10px; background:#06c755; border-color:#06c755; white-space:nowrap;" onclick="sendPetAnnouncement()">
+                            <i class="fas fa-paper-plane me-1"></i>ส่งประกาศ
+                        </button>
+                    </div>
+                </div>
+
                 <div class="stat-row">
                     <div class="stat-box" style="border-left-color:#198754;">
                         <div class="s-label">นัดหมายแล้ว (ตัว)</div>
@@ -2056,6 +2071,37 @@
         }
 
         new bootstrap.Modal(document.getElementById('mapModal')).show();
+    }
+
+    // [LINE ประกาศ] ส่งข้อความ Broadcast จากแท็บคิวทำหมัน ให้ทุกคนที่เป็นเพื่อนกับ LINE OA
+    function sendPetAnnouncement() {
+        var textEl = document.getElementById('pet-announcement-text');
+        var msg = textEl.value.trim();
+        if (!msg) {
+            Swal.fire({ icon: 'warning', title: 'กรุณากรอกข้อความประกาศ' });
+            return;
+        }
+        Swal.fire({
+            title: 'ยืนยันส่งประกาศ?',
+            html: 'ข้อความนี้จะถูกส่งให้ <b>ทุกคน</b> ที่เป็นเพื่อนกับ LINE OA ของเทศบาลทันที<br><br>' +
+                  '<div style="text-align:left; background:#f8fafc; padding:10px; border-radius:8px; white-space:pre-wrap; font-size:0.85rem;">' + msg.replace(/</g,'&lt;') + '</div>',
+            icon: 'question', showCancelButton: true,
+            confirmButtonColor: '#06c755', cancelButtonText: 'ยกเลิก', confirmButtonText: 'ส่งเลย'
+        }).then(function(result) {
+            if (!result.isConfirmed) return;
+            Swal.fire({ title: 'กำลังส่งประกาศ...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+            callGAS("sendPetAnnouncement", { message: msg, username: currentUser }, function(res) {
+                if (res && res.success) {
+                    Swal.fire({ icon: 'success', title: 'ส่งสำเร็จ!', text: res.message, timer: 1800, showConfirmButton: false });
+                    textEl.value = '';
+                } else {
+                    Swal.fire({ icon: 'error', title: 'ส่งไม่สำเร็จ', text: (res && res.message) || 'เกิดข้อผิดพลาด' });
+                }
+            }, function(err) {
+                console.error('sendPetAnnouncement fetch error:', err);
+                Swal.fire({ icon: 'error', title: 'การเชื่อมต่อขัดข้อง', text: 'ไม่สามารถส่งประกาศได้ กรุณาลองใหม่อีกครั้ง' });
+            });
+        });
     }
 
     function confirmDeleteLicense(rowNum) {
