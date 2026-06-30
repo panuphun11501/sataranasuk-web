@@ -70,12 +70,19 @@
         ============================================================ -->
         <script>
           var GAS_URL    = "https://script.google.com/macros/s/AKfycbyn5PE7PgLcAUvzMqvkM6pDY3sRrWH7wjKO7gY1E-Vld5qCL_wIzmCUoht1b3BCZAVD/exec"; // ← เปลี่ยน
-          var GAS_SECRET = "Jt9mK2pQ8xL5wRnB7cYeXvD3sAhF6gZq"; // ← เปลี่ยนให้ตรงกับ Code.gs
+          var GAS_SECRET = "tEPe3ovgnrhi4czqvptGLgOhkVOGjeTC"; // ⚠️ หมุนค่าใหม่แล้ว ต้องตรงกับ Code.gs เป๊ะๆ
 
           // ฟังก์ชันกลางสำหรับเรียก GAS แทน google.script.run
           function callGAS(action, data, successHandler, failureHandler) {
             var body = { secret: GAS_SECRET, action: action };
             if (data) body.data = data;
+            // [security fix - ปัญหาที่ 4] แนบ nonce (สุ่มไม่ซ้ำ) + timestamp ไปทุกครั้ง
+            // อัตโนมัติ เพื่อให้ GAS ฝั่ง server เช็คกัน request ถูก "ยิงซ้ำ" (replay)
+            // ประชาชนที่ใช้งานหน้านี้ไม่ต้องทำอะไรเพิ่ม ทำงานเบื้องหลังล้วนๆ
+            body._nonce = (typeof crypto !== 'undefined' && crypto.randomUUID)
+              ? crypto.randomUUID()
+              : (Date.now().toString(36) + Math.random().toString(36).slice(2));
+            body._timestamp = Date.now();
             fetch(GAS_URL, {
               method: "POST",
               body: JSON.stringify(body)
