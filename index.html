@@ -97,16 +97,9 @@
             </button>
         </div>
 
-        <nav class="top-navbar d-flex justify-content-start align-items-end" style="gap: 30px;">
-            <div class="navbar-brand mb-2">
-                <!-- [เปลี่ยนเป็นโลโก้เล็ก] เดิมเป็นไอคอน+ชื่อยาว "กองสาธารณสุขและสิ่งแวดล้อม"
-                     ตอนนี้เปลี่ยนเป็นโลโก้รูปเล็ก (สูง 32px) แทน เพื่อประหยัดพื้นที่แถบเมนูบน
-                     ไฟล์รูป: images/logo.png (ต้องอัปโหลดไฟล์นี้ไปไว้ในโฟลเดอร์เดียวกับเว็บ เหมือนตอนอัป banner-home.png)
-                     [แก้พื้นหลังขาว] ไฟล์โลโก้มีพื้นหลังขาวติดมา (ไม่โปร่งใส) เลยครอบด้วยวงกลมสีขาว+เงาเบาๆ
-                     ให้ดูเป็นตรา/badge ตั้งใจ แทนที่จะเห็นเป็นกล่องสี่เหลี่ยมขาวๆ ดูไม่เรียบร้อย -->
-                <img src="images/logo.png" alt="กองสาธารณสุขและสิ่งแวดล้อม เทศบาลเมืองจันทนิมิต" style="height: 32px; width: 32px; object-fit: cover; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.25); display: block;">
-                <span class="d-none d-md-inline">กองสาธารณสุขฯ</span>
-            </div>
+        <nav class="top-navbar d-flex justify-content-start align-items-end">
+            <!-- [เอาโลโก้/ชื่อหน่วยงานออกจากหัวเว็บ] เพราะเข้ามาข้างในเนื้อหาก็บอกชัดอยู่แล้ว
+                 เก็บโลโก้ไว้แสดงที่ footer ด้านล่างอย่างเดียว (2 รูป: เทศบาล + กอง) -->
             <div class="top-nav-tabs">
                 <a href="javascript:void(0);" class="top-nav-link active" onclick="switchProject('home')"><i class="fas fa-home"></i> หน้าแรก</a>
                 <a href="javascript:void(0);" class="top-nav-link" onclick="switchProject('pet')"><i class="fas fa-paw"></i> ทำหมันสุนัขและแมว</a>
@@ -1065,14 +1058,15 @@
         </script>
 
     <footer style="background:#0f2c59; color:rgba(255,255,255,0.85); padding:28px 32px 18px; font-family:'Sarabun',sans-serif; text-align:center;">
-      <!-- [เพิ่มโลโก้ 2 อัน] โลโก้เทศบาล + โลโก้กอง เรียงคู่กันตรงกลางด้านบนของ footer
-           ไฟล์รูป: images/logo.png (โลโก้เทศบาล อันเดียวกับที่ใช้ในแถบเมนูบน)
-                    images/logo-department.png (โลโก้กอง)
-           ต้องอัปโหลดไฟล์ทั้ง 2 นี้ไปไว้ในโฟลเดอร์ images เหมือนรูปอื่นๆ
-           [หมายเหตุ] ตั้งชื่อไฟล์เป็นภาษาอังกฤษ ไม่ใช้ชื่อไฟล์ภาษาไทย เพื่อป้องกันปัญหาลิงก์รูปพังบนเว็บบางระบบ -->
+      <!-- [โลโก้ 2 อัน เฉพาะใน footer] โลโก้เทศบาล + โลโก้กอง เรียงคู่กันตรงกลางด้านบนของ footer
+           (เอาโลโก้ออกจากหัวเว็บแล้ว เหลือแสดงที่นี่ที่เดียว)
+           ไฟล์รูป: images/logo.png (โลโก้เทศบาล), images/logo-department.png (โลโก้กอง)
+           ต้องอัปโหลดไฟล์ทั้ง 2 นี้ไปไว้ในโฟลเดอร์ images
+           [หมายเหตุ] ตั้งชื่อไฟล์เป็นภาษาอังกฤษ ไม่ใช้ชื่อไฟล์ภาษาไทย เพื่อป้องกันปัญหาลิงก์รูปพังบนเว็บบางระบบ
+           [ปรับขนาด] โลโก้กองมีขอบ/ที่ว่างรอบตัวเยอะกว่าโลโก้เทศบาล เลยตั้งสูงกว่า (78px) เพื่อให้เนื้อโลโก้ดูใกล้เคียงกัน -->
       <div style="display:flex; justify-content:center; align-items:center; gap:18px; margin-bottom:12px;">
         <img src="images/logo.png" alt="ตราเทศบาลเมืองจันทนิมิต" style="height: 56px; width: auto; display: block;">
-        <img src="images/logo-department.png" alt="ตรากองสาธารณสุขและสิ่งแวดล้อม" style="height: 56px; width: auto; display: block;">
+        <img src="images/logo-department.png" alt="ตรากองสาธารณสุขและสิ่งแวดล้อม" style="height: 78px; width: auto; display: block;">
       </div>
       <p style="font-size:15px; font-weight:600; color:#fff; margin:0 0 7px;">กองสาธารณสุขและสิ่งแวดล้อม เทศบาลเมืองจันทนิมิต</p>
       <p style="font-size:13px; color:rgba(255,255,255,0.7); margin:0 0 4px; line-height:1.7;">999 ถนนจันทนิมิต 2 ตำบลจันทนิมิต อำเภอเมืองจันทบุรี จังหวัดจันทบุรี 22000</p>
