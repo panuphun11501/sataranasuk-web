@@ -97,14 +97,19 @@
             </button>
         </div>
 
-        <nav class="top-navbar d-flex justify-content-between align-items-end">
+        <nav class="top-navbar d-flex justify-content-start align-items-end" style="gap: 30px;">
             <div class="navbar-brand mb-2">
-                <i class="fas fa-building"></i> กองสาธารณสุขและสิ่งแวดล้อม
+                <!-- [เปลี่ยนเป็นโลโก้เล็ก] เดิมเป็นไอคอน+ชื่อยาว "กองสาธารณสุขและสิ่งแวดล้อม"
+                     ตอนนี้เปลี่ยนเป็นโลโก้รูปเล็ก (สูง 32px) แทน เพื่อประหยัดพื้นที่แถบเมนูบน
+                     ไฟล์รูป: images/logo.png (ต้องอัปโหลดไฟล์นี้ไปไว้ในโฟลเดอร์เดียวกับเว็บ เหมือนตอนอัป banner-home.png) -->
+                <img src="images/logo.png" alt="กองสาธารณสุขและสิ่งแวดล้อม เทศบาลเมืองจันทนิมิต" style="height: 32px; width: auto; display: block;">
+                <span class="d-none d-md-inline">กองสาธารณสุขฯ</span>
             </div>
             <div class="top-nav-tabs">
                 <a href="javascript:void(0);" class="top-nav-link active" onclick="switchProject('home')"><i class="fas fa-home"></i> หน้าแรก</a>
-                <a href="javascript:void(0);" class="top-nav-link" onclick="switchProject('pet')"><i class="fas fa-paw"></i> โครงการทำหมันสุนัขและแมว</a>
+                <a href="javascript:void(0);" class="top-nav-link" onclick="switchProject('pet')"><i class="fas fa-paw"></i> ทำหมันสุนัขและแมว</a>
                 <a href="javascript:void(0);" class="top-nav-link" onclick="switchProject('food')"><i class="fas fa-utensils"></i> ใบอนุญาต</a>
+                <a href="javascript:void(0);" class="top-nav-link" onclick="switchProject('volunteer')"><i class="fas fa-leaf"></i> อาสาสมัคร อถล.</a>
             </div>
         </nav>
 
@@ -514,6 +519,16 @@
                         </div>
 
                     </div>
+
+                    <!-- [เพิ่มหัวข้อใหม่] อาสาสมัครท้องถิ่นรักษ์โลก — หน้าโล่งๆ ไว้ก่อน ยังไม่มีเนื้อหา รอเพิ่มทีหลัง -->
+                    <div id="project-volunteer" class="d-none animation-fade-in">
+                        <div class="content-card p-5 text-center" style="border-radius: 15px;">
+                            <i class="fas fa-leaf fa-3x text-success mb-3"></i>
+                            <h4 style="color: #0f2c59; font-weight: 700;">อาสาสมัครท้องถิ่นรักษ์โลก</h4>
+                            <p class="text-muted mt-2" style="font-size: 0.95rem;">หน้านี้อยู่ในระหว่างการจัดทำเนื้อหา กรุณารอติดตามข้อมูลเพิ่มเติมเร็วๆ นี้</p>
+                            <span class="badge bg-warning text-dark mt-2" style="font-size: 0.85rem; padding: 8px 16px; border-radius: 20px;"><i class="fas fa-tools me-1"></i>อยู่ในระหว่างการพัฒนา</span>
+                        </div>
+                    </div>
                 </main>
             </div>
         </div>
@@ -584,10 +599,12 @@
                   if(projectName === 'home') links[0].classList.add('active');
                   if(projectName === 'pet') links[1].classList.add('active');
                   if(projectName === 'food') links[2].classList.add('active');
+                  if(projectName === 'volunteer') links[3].classList.add('active');
               }
               document.getElementById('project-home').classList.add('d-none');
               document.getElementById('project-pet').classList.add('d-none');
               document.getElementById('project-food').classList.add('d-none');
+              document.getElementById('project-volunteer').classList.add('d-none');
               document.getElementById('sidebar-pet-project').classList.add('d-none');
               document.getElementById('sidebar-food-project').classList.add('d-none');
               var sidebarEl = document.getElementById('sidebar-menu');
@@ -606,6 +623,10 @@
                   document.getElementById('sidebar-food-project').classList.remove('d-none');
                   sidebarEl.classList.remove('d-none');
                   mainEl.className = 'col-md-9 col-lg-10 main-content';
+              } else if (projectName === 'volunteer') {
+                  document.getElementById('project-volunteer').classList.remove('d-none');
+                  sidebarEl.classList.add('d-none');
+                  mainEl.className = 'col-12 main-content';
               }
           }
 
@@ -1042,6 +1063,10 @@
         </script>
 
     <footer style="background:#0f2c59; color:rgba(255,255,255,0.85); padding:28px 32px 18px; font-family:'Sarabun',sans-serif; text-align:center;">
+      <!-- [เพิ่มโลโก้กอง] โลโก้เล็กๆ ตรงกลางด้านบนของ footer
+           ไฟล์รูป: images/logo-department.png (ต้องอัปโหลดไฟล์นี้ไปไว้ในโฟลเดอร์ images เหมือนรูปอื่นๆ)
+           [หมายเหตุ] ตั้งชื่อไฟล์เป็นภาษาอังกฤษ ไม่ใช้ชื่อไฟล์ภาษาไทย เพื่อป้องกันปัญหาลิงก์รูปพังบนเว็บบางระบบ -->
+      <img src="images/logo-department.png" alt="ตรากองสาธารณสุขและสิ่งแวดล้อม" style="height: 56px; width: auto; display: block; margin: 0 auto 12px;">
       <p style="font-size:15px; font-weight:600; color:#fff; margin:0 0 7px;">กองสาธารณสุขและสิ่งแวดล้อม เทศบาลเมืองจันทนิมิต</p>
       <p style="font-size:13px; color:rgba(255,255,255,0.7); margin:0 0 4px; line-height:1.7;">999 ถนนจันทนิมิต 2 ตำบลจันทนิมิต อำเภอเมืองจันทบุรี จังหวัดจันทบุรี 22000</p>
       <p style="font-size:13px; color:rgba(255,255,255,0.7); margin:0 0 2px; line-height:1.7;">039-311-073 ต่อ 304 (งานฝ่ายบริหาร) &nbsp;|&nbsp; ต่อ 306 (งานฝ่ายบริการ)</p>
