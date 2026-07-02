@@ -184,6 +184,15 @@
                             <i class="fas fa-phone-alt text-secondary"></i> ติดต่อเจ้าหน้าที่
                         </a>
                     </div>
+                    <div id="sidebar-volunteer-project" class="d-none">
+                        <div class="sidebar-heading">อาสาสมัคร อถล.</div>
+                        <a class="nav-link sidebar-menu-btn active" href="javascript:void(0);" onclick="switchVolunteerTab('volunteer-register', this)">
+                            <i class="fas fa-user-plus text-secondary"></i> สมัครสมาชิก
+                        </a>
+                        <a class="nav-link sidebar-menu-btn" href="javascript:void(0);" onclick="switchVolunteerTab('volunteer-balance', this)">
+                            <i class="fas fa-wallet text-secondary"></i> ตรวจสอบยอดธนาคารขยะ
+                        </a>
+                    </div>
                 </nav>
 
                 <main class="col-12 main-content">
@@ -522,14 +531,89 @@
 
                     </div>
 
-                    <!-- [เพิ่มหัวข้อใหม่] อาสาสมัครท้องถิ่นรักษ์โลก — หน้าโล่งๆ ไว้ก่อน ยังไม่มีเนื้อหา รอเพิ่มทีหลัง -->
+                    <!-- [อาสาสมัคร อถล.] ธนาคารขยะ + สมัครสมาชิก -->
                     <div id="project-volunteer" class="d-none animation-fade-in">
-                        <div class="content-card p-5 text-center" style="border-radius: 15px;">
-                            <i class="fas fa-leaf fa-3x text-success mb-3"></i>
-                            <h4 style="color: #0f2c59; font-weight: 700;">อาสาสมัครท้องถิ่นรักษ์โลก</h4>
-                            <p class="text-muted mt-2" style="font-size: 0.95rem;">หน้านี้อยู่ในระหว่างการจัดทำเนื้อหา กรุณารอติดตามข้อมูลเพิ่มเติมเร็วๆ นี้</p>
-                            <span class="badge bg-warning text-dark mt-2" style="font-size: 0.85rem; padding: 8px 16px; border-radius: 20px;"><i class="fas fa-tools me-1"></i>อยู่ในระหว่างการพัฒนา</span>
+
+                        <!-- Tab: สมัครสมาชิก -->
+                        <div id="tab-volunteer-register">
+                            <h4 style="color:#0f2c59; font-weight:700; margin-bottom:6px;"><i class="fas fa-user-plus"></i> สมัครสมาชิกอาสาสมัคร อถล.</h4>
+                            <p class="text-muted mb-4" style="font-size:0.92rem;">กรอกข้อมูลเพื่อสมัครเป็นสมาชิกธนาคารขยะ อาสาสมัครท้องถิ่นรักษ์โลก (อถล.)</p>
+                            <div class="content-card p-4" style="border-radius:12px;">
+                                <form id="volunteerRegForm" onsubmit="submitVolunteerRegistration(event)">
+                                    <div class="row g-3">
+                                        <div class="col-md-2">
+                                            <label class="form-label fw-bold text-dark">คำนำหน้า</label>
+                                            <select class="form-select" id="volRegPrefix" required>
+                                                <option value="" selected disabled>เลือก</option>
+                                                <option value="นาย">นาย</option>
+                                                <option value="นาง">นาง</option>
+                                                <option value="นางสาว">นางสาว</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-5">
+                                            <label class="form-label fw-bold text-dark">ชื่อ</label>
+                                            <input type="text" class="form-control" id="volRegFirstName" required placeholder="เช่น สมชาย">
+                                        </div>
+                                        <div class="col-md-5">
+                                            <label class="form-label fw-bold text-dark">นามสกุล</label>
+                                            <input type="text" class="form-control" id="volRegLastName" required placeholder="เช่น ใจดี">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold text-dark">หมายเลขบัตรประชาชน (13 หลัก)</label>
+                                            <input type="text" class="form-control" id="volRegIdCard" required pattern="\d{13}" maxlength="13" placeholder="ระบุตัวเลข 13 หลัก" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-bold text-dark">เบอร์โทรศัพท์</label>
+                                            <input type="tel" class="form-control" id="volRegPhone" required pattern="\d{9,10}" maxlength="10" placeholder="เช่น 0994445556" oninput="this.value = this.value.replace(/[^0-9]/g, '');">
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label fw-bold text-dark">ที่อยู่ (ไม่บังคับ)</label>
+                                            <input type="text" class="form-control" id="volRegAddress" placeholder="เช่น 40/1 ม.1 ต.จันทนิมิต อ.เมืองจันทบุรี จ.จันทบุรี">
+                                        </div>
+                                        <div class="col-12 text-center mt-4">
+                                            <button type="submit" id="btnSubmitVolReg" class="btn btn-primary px-5 py-2 rounded-pill shadow-sm" style="background-color: #0f2c59; border: none; font-weight: 600;">
+                                                <i class="fas fa-paper-plane"></i> ยืนยันการสมัครสมาชิก
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
+
+                        <!-- Tab: ตรวจสอบยอดธนาคารขยะ -->
+                        <div id="tab-volunteer-balance" class="d-none">
+                            <h4 style="color:#0f2c59; font-weight:700; margin-bottom:6px;"><i class="fas fa-wallet"></i> ตรวจสอบยอดธนาคารขยะ</h4>
+                            <p class="text-muted mb-4" style="font-size:0.92rem;">กรอกเลขบัตรประชาชน 13 หลัก เพื่อตรวจสอบยอดคงเหลือและประวัติการฝาก-ถอนของท่าน</p>
+                            <div class="content-card p-4 mb-4" style="border-radius:12px;">
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-12 col-md-8">
+                                        <label class="form-label fw-bold" style="font-size:0.88rem; color:#334155;">เลขบัตรประชาชน <span class="text-danger">*</span></label>
+                                        <input type="text" id="volunteer-balance-search-input" class="form-control"
+                                            placeholder="กรอกเลขบัตรประชาชน 13 หลัก"
+                                            maxlength="13"
+                                            oninput="this.value=this.value.replace(/[^0-9]/g,''); updateVolunteerSearchBtn()"
+                                            onkeydown="if(event.key==='Enter' && this.value.length===13) searchVolunteerBalance()"
+                                            style="border-radius:10px; font-size:1rem; padding:10px 14px; letter-spacing:2px;">
+                                        <div id="volunteer-input-hint" style="font-size:0.82rem; margin-top:5px; color:#94a3b8;">
+                                            <i class="fas fa-info-circle me-1"></i>กรอกตัวเลข 13 หลัก (<span id="volunteer-digit-count">0</span>/13)
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-4" style="padding-bottom:28px;">
+                                        <button id="volunteer-balance-search-btn" class="btn w-100" onclick="searchVolunteerBalance()" disabled
+                                            style="background:#94a3b8; color:white; border-radius:10px; padding:10px; font-weight:600; transition:0.2s;">
+                                            <i class="fas fa-search me-2"></i>ค้นหา
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="volunteer-balance-search-result">
+                                <div class="content-card p-4 text-center" style="border-radius:12px; color:#94a3b8;">
+                                    <i class="fas fa-wallet fa-3x mb-3" style="color:#cbd5e1;"></i>
+                                    <p class="mb-0">กรอกเลขบัตรประชาชน 13 หลักเพื่อค้นหา</p>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </main>
             </div>
@@ -609,6 +693,7 @@
               document.getElementById('project-volunteer').classList.add('d-none');
               document.getElementById('sidebar-pet-project').classList.add('d-none');
               document.getElementById('sidebar-food-project').classList.add('d-none');
+              document.getElementById('sidebar-volunteer-project').classList.add('d-none');
               var sidebarEl = document.getElementById('sidebar-menu');
               var mainEl = document.querySelector('.main-content');
               if (projectName === 'home') {
@@ -627,8 +712,9 @@
                   mainEl.className = 'col-md-9 col-lg-10 main-content';
               } else if (projectName === 'volunteer') {
                   document.getElementById('project-volunteer').classList.remove('d-none');
-                  sidebarEl.classList.add('d-none');
-                  mainEl.className = 'col-12 main-content';
+                  document.getElementById('sidebar-volunteer-project').classList.remove('d-none');
+                  sidebarEl.classList.remove('d-none');
+                  mainEl.className = 'col-md-9 col-lg-10 main-content';
               }
           }
 
@@ -637,6 +723,16 @@
                   document.getElementById('tab-' + t).classList.add('d-none');
               });
               var allBtns = document.querySelectorAll('#sidebar-food-project .nav-link');
+              allBtns.forEach(btn => btn.classList.remove('active'));
+              document.getElementById('tab-' + tabName).classList.remove('d-none');
+              if(btnElement) btnElement.classList.add('active');
+          }
+
+          function switchVolunteerTab(tabName, btnElement) {
+              ['volunteer-register','volunteer-balance'].forEach(function(t) {
+                  document.getElementById('tab-' + t).classList.add('d-none');
+              });
+              var allBtns = document.querySelectorAll('#sidebar-volunteer-project .nav-link');
               allBtns.forEach(btn => btn.classList.remove('active'));
               document.getElementById('tab-' + tabName).classList.remove('d-none');
               if(btnElement) btnElement.classList.add('active');
@@ -1079,6 +1175,107 @@
           function backToAlbums() {
               document.getElementById('album-list-view').classList.remove('d-none');
               document.getElementById('album-photos-view').classList.add('d-none');
+          }
+
+          // ==================== [อาสาสมัคร อถล.] สมัครสมาชิก + ตรวจสอบยอดธนาคารขยะ ====================
+
+          // ✅ ส่งฟอร์มสมัครสมาชิกอาสาสมัคร อถล. (ใช้ callGAS)
+          function submitVolunteerRegistration(event) {
+              event.preventDefault();
+              var formData = {
+                  prefix:    document.getElementById('volRegPrefix').value,
+                  firstname: document.getElementById('volRegFirstName').value.trim(),
+                  lastname:  document.getElementById('volRegLastName').value.trim(),
+                  idCard:    document.getElementById('volRegIdCard').value.trim(),
+                  phone:     document.getElementById('volRegPhone').value.trim(),
+                  address:   document.getElementById('volRegAddress').value.trim()
+              };
+
+              var btn = document.getElementById('btnSubmitVolReg');
+              var originalText = btn.innerHTML;
+              btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> กำลังส่งข้อมูล...';
+              btn.disabled = true;
+
+              callGAS("registerVolunteerMember", formData, function(response) {
+                  btn.innerHTML = originalText;
+                  btn.disabled = false;
+                  if (response && response.success) {
+                      Swal.fire({ icon: 'success', title: 'สมัครสมาชิกสำเร็จ!', text: 'ระบบบันทึกข้อมูลของท่านเรียบร้อยแล้ว', confirmButtonColor: '#0f2c59' }).then(() => {
+                          document.getElementById('volunteerRegForm').reset();
+                      });
+                  } else {
+                      Swal.fire('ผิดพลาด', (response && response.message) || 'ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่', 'error');
+                  }
+              }, function(error) {
+                  btn.innerHTML = originalText;
+                  btn.disabled = false;
+                  Swal.fire('การเชื่อมต่อขัดข้อง', error.message, 'error');
+              });
+          }
+
+          function updateVolunteerSearchBtn() {
+              var val = document.getElementById('volunteer-balance-search-input').value;
+              var btn = document.getElementById('volunteer-balance-search-btn');
+              document.getElementById('volunteer-digit-count').innerText = val.length;
+              if (val.length === 13) {
+                  btn.disabled = false;
+                  btn.style.background = '#0f2c59';
+              } else {
+                  btn.disabled = true;
+                  btn.style.background = '#94a3b8';
+              }
+          }
+
+          function searchVolunteerBalance() {
+              var keyword = document.getElementById('volunteer-balance-search-input').value.trim();
+              var resultDiv = document.getElementById('volunteer-balance-search-result');
+              if (keyword.length !== 13) {
+                  resultDiv.innerHTML = '<div class="content-card p-4 text-center" style="border-radius:12px; border:1px solid #fcd34d; background:#fffbeb;"><i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i><p class="mb-0" style="color:#b45309;">กรุณากรอกเลขบัตรประชาชนให้ครบ 13 หลัก</p></div>';
+                  return;
+              }
+              resultDiv.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div><p class="mt-2 text-muted">กำลังค้นหา...</p></div>';
+              callGAS("searchWasteBankBalance", { idCard: keyword }, function(data) {
+                  // [anti-spam] เคสค้นหาถี่เกินไป backend จะตอบ {error: "..."} แทนข้อมูลยอด
+                  if (data && data.error) {
+                      resultDiv.innerHTML = '<div class="content-card p-4 text-center" style="border-radius:12px; border:1px solid #fcd34d; background:#fffbeb;"><i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i><p class="mb-0" style="color:#b45309;">' + esc(data.error) + '</p></div>';
+                      return;
+                  }
+                  if (!data || !data.name) {
+                      resultDiv.innerHTML = '<div class="content-card p-4 text-center" style="border-radius:12px;"><i class="fas fa-folder-open fa-3x text-muted mb-3"></i><h6 style="color:#64748b;">ไม่พบข้อมูลสมาชิก</h6><p class="text-muted mb-0">ไม่พบสมาชิกที่ตรงกับเลขบัตรประชาชนนี้ กรุณาสมัครสมาชิกก่อนใช้งาน<br>หากมีข้อสงสัยติดต่อ 039-311-073 ต่อ 306 (ฝ่ายบริการ)</p></div>';
+                      return;
+                  }
+                  var balanceNum = parseFloat(data.balance) || 0;
+                  var html = '<div class="content-card p-4 mb-3 text-center" style="border-radius:12px; border-left:5px solid #0f2c59;">';
+                  html += '<p class="text-muted mb-1" style="font-size:0.9rem;"><i class="fas fa-user me-1"></i>' + esc(data.name) + '</p>';
+                  html += '<h3 style="color:#0f2c59; font-weight:700; margin:6px 0 0;">' + balanceNum.toLocaleString('th-TH') + ' บาท</h3>';
+                  html += '<p class="text-muted mb-0" style="font-size:0.85rem;">ยอดคงเหลือในธนาคารขยะ</p>';
+                  html += '</div>';
+
+                  var history = (data.history && data.history.length) ? data.history : [];
+                  if (history.length === 0) {
+                      html += '<div class="content-card p-4 text-center" style="border-radius:12px; color:#94a3b8;"><p class="mb-0">ยังไม่มีประวัติการฝาก-ถอน</p></div>';
+                  } else {
+                      html += '<div class="content-card p-3" style="border-radius:12px;">';
+                      html += '<h6 class="fw-bold mb-3" style="color:#334155;"><i class="fas fa-history me-1"></i>ประวัติการฝาก-ถอนล่าสุด</h6>';
+                      html += '<div class="table-responsive"><table class="table table-sm mb-0" style="font-size:0.88rem;"><thead><tr><th>วันที่</th><th>ประเภท</th><th class="text-end">จำนวนเงิน</th></tr></thead><tbody>';
+                      for (var i = 0; i < history.length; i++) {
+                          var h = history[i];
+                          var amtNum = parseFloat(h.amount) || 0;
+                          // ยอดคงเหลือถูกกระทบตามประเภท: ฝาก = +, ถอน = -,
+                          // รับเงินสดทันที = ไม่กระทบยอดเลย (จ่ายสดจบในตัว ไม่สะสมบัญชี) จึงต้องแสดงแยกจากสองแบบข้างต้น
+                          var amtColor, amtSign;
+                          if (h.type === 'ฝาก') { amtColor = '#059669'; amtSign = '+'; }
+                          else if (h.type === 'รับเงินสดทันที') { amtColor = '#64748b'; amtSign = ''; }
+                          else { amtColor = '#dc2626'; amtSign = '-'; }
+                          var amtNote = (h.type === 'รับเงินสดทันที') ? '<div style="font-size:0.75rem; color:#94a3b8;">(จ่ายสดแล้ว ไม่กระทบยอด)</div>' : '';
+                          html += '<tr><td>' + esc(h.date||'-') + '</td><td>' + esc(h.type||'-') + '</td><td class="text-end" style="color:' + amtColor + '; font-weight:600;">' + amtSign + amtNum.toLocaleString('th-TH') + amtNote + '</td></tr>';
+                      }
+                      html += '</tbody></table></div></div>';
+                  }
+                  resultDiv.innerHTML = html;
+              }, function() {
+                  resultDiv.innerHTML = '<div class="content-card p-4 text-center" style="border-radius:12px;"><i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i><p class="mb-0 text-muted">เชื่อมต่อระบบไม่ได้ กรุณาลองใหม่</p></div>';
+              });
           }
         </script>
 
