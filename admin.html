@@ -75,6 +75,28 @@
         .page-section { display: none; }
         .page-section.active { display: block; }
 
+        /* ===== VOLUNTEER QUICK-ENTRY COUNTER SCREEN (หน้าเคาน์เตอร์ — ใช้บนแท็บเล็ต/จอสัมผัส) ===== */
+        .qe-zone { background: white; border-radius: 14px; padding: 18px 20px; margin-bottom: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); }
+        .qe-input-lg { font-size: 1.4rem; padding: 16px 18px; border-radius: 10px; }
+        .qe-member-box { border-radius: 12px; padding: 16px 20px; margin-top: 12px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+        .qe-member-box.found { background: #ecfdf5; border: 2px solid #059669; }
+        .qe-member-box.notfound { background: #fef2f2; border: 2px solid #dc2626; }
+        .qe-member-name { font-size: 1.15rem; font-weight: 700; color: #0f2c59; }
+        .qe-member-balance-label { font-size: 0.8rem; color: #64748b; }
+        .qe-member-balance { font-size: 2.1rem; font-weight: 800; color: #059669; line-height: 1; }
+        .qe-type-grid { display: grid; grid-template-columns: repeat(1, 1fr); gap: 12px; }
+        @media (min-width: 768px) { .qe-type-grid { grid-template-columns: repeat(3, 1fr); } }
+        .qe-type-btn { border: 3px solid transparent; border-radius: 14px; padding: 18px 10px; text-align: center; font-weight: 700; font-size: 1.05rem; cursor: pointer; transition: 0.15s; color: white; }
+        .qe-type-btn i { display: block; font-size: 1.6rem; margin-bottom: 6px; }
+        .qe-type-btn.qe-deposit  { background: #059669; }
+        .qe-type-btn.qe-withdraw { background: #d97706; }
+        .qe-type-btn.qe-cash     { background: #0369a1; }
+        .qe-type-btn.active { border-color: #0f2c59; box-shadow: 0 0 0 4px rgba(15,44,89,0.15); transform: scale(1.03); }
+        .qe-type-btn:not(.active) { opacity: 0.55; }
+        .qe-total-box { background: #0f2c59; color: white; border-radius: 12px; padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+        .qe-total-box .qe-total-amount { font-size: 1.9rem; font-weight: 800; color: #fbbf24; }
+        .qe-submit-btn { font-size: 1.25rem; font-weight: 700; padding: 16px; border-radius: 12px; width: 100%; }
+
         /* ===== CARDS & COMPONENTS ===== */
         .content-card { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); padding: 20px; }
         .stat-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
@@ -146,6 +168,9 @@
             <a class="nav-tab" onclick="switchSection('license')" id="tab-license">
                 <i class="fas fa-file-alt"></i> ใบอนุญาต
             </a>
+            <a class="nav-tab" onclick="switchSection('volunteer')" id="tab-volunteer">
+                <i class="fas fa-leaf"></i> อถล.
+            </a>
             <a class="nav-tab" onclick="switchSection('settings')" id="tab-settings">
                 <i class="fas fa-cog"></i> ตั้งค่าระบบ
             </a>
@@ -212,6 +237,20 @@
                 </a>
                 <a class="sidebar-link" onclick="switchSidebar('license-map', this); setTimeout(initOverviewMap, 100);">
                     <span class="icon"><i class="fas fa-map-marked-alt" style="color:#0369a1;"></i></span> แผนที่รวม
+                </a>
+            </div>
+
+            <!-- เมนู: อาสาสมัคร อถล. -->
+            <div id="sidebar-volunteer" class="sidebar-section-group d-none">
+                <div class="sidebar-section">อาสาสมัคร อถล.</div>
+                <a class="sidebar-link active" onclick="switchSidebar('volunteer-members', this)">
+                    <span class="icon"><i class="fas fa-users"></i></span> สมาชิก + ยอดคงเหลือ
+                </a>
+                <a class="sidebar-link" onclick="switchSidebar('volunteer-ledger', this)">
+                    <span class="icon"><i class="fas fa-exchange-alt"></i></span> รายการฝาก-ถอน
+                </a>
+                <a class="sidebar-link" onclick="switchSidebar('volunteer-rounds', this)">
+                    <span class="icon"><i class="fas fa-recycle" style="color:#059669;"></i></span> รอบขาย / สรุปกำไร
                 </a>
             </div>
 
@@ -761,6 +800,284 @@
                 </div>
             </div>
 
+            <!-- ===== SECTION: อาสาสมัคร อถล. (ธนาคารขยะ + สมัครสมาชิก) ===== -->
+            <div id="section-volunteer-members" class="page-section">
+                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                    <div>
+                        <h5 style="color:#0f2c59;font-weight:700;margin:0;">สมาชิกอาสาสมัคร อถล. + ยอดคงเหลือ</h5>
+                        <p class="text-muted mb-0" style="font-size:0.88rem;">รายชื่อสมาชิกธนาคารขยะและยอดคงเหลือปัจจุบัน (คำนวณสดจากรายการฝาก-ถอน)</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary" style="border-radius:10px;" onclick="loadVolunteerMembers()">
+                            <i class="fas fa-sync-alt me-1"></i> รีเฟรชข้อมูล
+                        </button>
+                        <button class="btn btn-success" style="border-radius:10px;" onclick="showVolMemberForm()">
+                            <i class="fas fa-user-plus me-1"></i> เพิ่มสมาชิกใหม่
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-md-3">
+                        <div class="stat-box" style="border-left-color:#64748b;">
+                            <div class="s-label">สมาชิกทั้งหมด</div>
+                            <div class="s-number" style="color:#64748b;" id="db-vol-total-members">-</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-box" style="border-left-color:#059669;">
+                            <div class="s-label">ยอดคงเหลือรวม (บาท)</div>
+                            <div class="s-number" style="color:#059669;" id="db-vol-total-balance">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ฟอร์มเพิ่มสมาชิกใหม่ (เจ้าหน้าที่กรอกแทนกรณีสมาชิกสมัครที่หน้าเจ้าหน้าที่) -->
+                <div id="vol-member-form-wrap" class="content-card p-4 mb-3 d-none" style="border-radius:12px; border:2px solid #059669;">
+                    <h6 style="color:#059669; font-weight:700;"><i class="fas fa-user-plus me-2"></i>เพิ่มสมาชิกใหม่</h6>
+                    <div class="row g-2 mt-1">
+                        <div class="col-6 col-md-2">
+                            <label class="form-label fw-bold" style="font-size:0.88rem;">คำนำหน้า <span class="text-danger">*</span></label>
+                            <select id="vmf-prefix" class="form-select">
+                                <option value="">--</option>
+                                <option>นาย</option>
+                                <option>นาง</option>
+                                <option>นางสาว</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-5">
+                            <label class="form-label fw-bold" style="font-size:0.88rem;">ชื่อ <span class="text-danger">*</span></label>
+                            <input type="text" id="vmf-firstname" class="form-control" placeholder="ชื่อจริง">
+                        </div>
+                        <div class="col-12 col-md-5">
+                            <label class="form-label fw-bold" style="font-size:0.88rem;">นามสกุล <span class="text-danger">*</span></label>
+                            <input type="text" id="vmf-lastname" class="form-control" placeholder="นามสกุล">
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-bold" style="font-size:0.88rem;">เลขบัตรประชาชน <span class="text-danger">*</span></label>
+                            <input type="text" id="vmf-idcard" class="form-control" maxlength="13" placeholder="13 หลัก" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label fw-bold" style="font-size:0.88rem;">เบอร์โทรศัพท์ <span class="text-danger">*</span></label>
+                            <input type="text" id="vmf-phone" class="form-control" maxlength="10" placeholder="เช่น 0994445556" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold" style="font-size:0.88rem;">ที่อยู่ (ไม่บังคับ)</label>
+                            <input type="text" id="vmf-address" class="form-control" placeholder="ที่อยู่">
+                        </div>
+                        <div class="col-12 d-flex gap-2 mt-2">
+                            <button class="btn btn-primary" onclick="submitVolMemberForm()" style="border-radius:8px;">
+                                <i class="fas fa-save me-1"></i> บันทึก
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="hideVolMemberForm()" style="border-radius:8px;">ยกเลิก</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-card mb-3">
+                    <input type="text" id="vol-member-search" class="form-control" placeholder="🔍 พิมพ์ชื่อ หรือเลขบัตรประชาชน..." oninput="filterVolunteerMembersTable()" style="border-radius:10px;">
+                </div>
+
+                <div class="table-wrapper table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>ชื่อ-นามสกุล</th>
+                                <th>เลขบัตรประชาชน</th>
+                                <th>เบอร์โทร</th>
+                                <th>สถานะ</th>
+                                <th class="text-end">ยอดคงเหลือ (บาท)</th>
+                                <th>จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vol-members-tbody">
+                            <tr><td colspan="6" class="text-center py-4">กำลังโหลดข้อมูล...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="section-volunteer-ledger" class="page-section">
+                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                    <div>
+                        <h5 style="color:#0f2c59;font-weight:700;margin:0;">จุดบริการ อถล. (ฝาก / ถอน / รับเงินสดทันที)</h5>
+                        <p class="text-muted mb-0" style="font-size:0.88rem;">หน้าจอใช้งานหน้าเคาน์เตอร์ — เหมาะกับแท็บเล็ต/จอสัมผัส (ระบบบันทึกบัญชี ไม่ใช่การโอนเงินจริง)</p>
+                    </div>
+                    <button class="btn btn-outline-primary" style="border-radius:10px;" onclick="loadVolunteerLedger()">
+                        <i class="fas fa-sync-alt me-1"></i> รีเฟรชประวัติ
+                    </button>
+                </div>
+
+                <!-- โซน 1: ค้นหาสมาชิก -->
+                <div class="qe-zone">
+                    <label class="form-label fw-bold" style="font-size:0.95rem;">① ค้นหาสมาชิกด้วยเลขบัตรประชาชน</label>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <input type="text" id="qe-idcard" class="form-control qe-input-lg" style="max-width:340px;" maxlength="13"
+                               placeholder="กรอกเลขบัตรประชาชน 13 หลัก" autocomplete="off"
+                               oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+                               onkeydown="if(event.key==='Enter'){searchQuickEntryMember();}">
+                        <button class="btn btn-primary qe-input-lg" onclick="searchQuickEntryMember()"><i class="fas fa-search me-1"></i>ค้นหา</button>
+                        <button class="btn btn-outline-secondary qe-input-lg" onclick="resetQuickEntry()"><i class="fas fa-undo me-1"></i>เริ่มรายการใหม่</button>
+                    </div>
+                    <div id="qe-member-box" class="qe-member-box notfound d-none">
+                        <div>
+                            <div class="qe-member-name" id="qe-member-name">-</div>
+                            <div class="text-muted" style="font-size:0.85rem;" id="qe-member-idcard">-</div>
+                        </div>
+                        <div class="text-end">
+                            <div class="qe-member-balance-label">ยอดคงเหลือปัจจุบัน (บาท)</div>
+                            <div class="qe-member-balance" id="qe-member-balance">0.00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- โซน 2: เลือกประเภทรายการ -->
+                <div class="qe-zone d-none" id="qe-zone-type">
+                    <label class="form-label fw-bold" style="font-size:0.95rem;">② เลือกประเภทรายการ</label>
+                    <div class="qe-type-grid">
+                        <div class="qe-type-btn qe-deposit active" id="qe-typebtn-ฝาก" onclick="selectQuickEntryType('ฝาก')"><i class="fas fa-arrow-down"></i>ฝากเงิน</div>
+                        <div class="qe-type-btn qe-withdraw" id="qe-typebtn-ถอน" onclick="selectQuickEntryType('ถอน')"><i class="fas fa-arrow-up"></i>ถอนเงิน</div>
+                        <div class="qe-type-btn qe-cash" id="qe-typebtn-รับเงินสดทันที" onclick="selectQuickEntryType('รับเงินสดทันที')"><i class="fas fa-money-bill-wave"></i>รับเงินสดทันที</div>
+                    </div>
+                </div>
+
+                <!-- โซน 3: แบบฟอร์มไดนามิก -->
+                <div class="qe-zone d-none" id="qe-zone-form">
+                    <label class="form-label fw-bold" style="font-size:0.95rem;" id="qe-form-title">③ รายละเอียดรายการ</label>
+
+                    <!-- ฝาก / รับเงินสดทันที: เลือกรอบขาย (ไม่บังคับ) -->
+                    <div class="col-12 col-md-6 mb-2 d-none" id="qe-round-wrap">
+                        <label class="form-label fw-bold" style="font-size:0.85rem;">รอบขาย (ถ้ามี — สำหรับผูกยอดที่จ่ายเข้ารอบขายที่จะขายให้ร้าน)</label>
+                        <select id="qe-round" class="form-select qe-input-lg">
+                            <option value="">-- ไม่ระบุรอบ --</option>
+                        </select>
+                    </div>
+
+                    <!-- จำนวนเงินรวม (ใช้ร่วมกันทั้ง 3 ประเภทรายการ) -->
+                    <div id="qe-amount-wrap">
+                        <label class="form-label fw-bold" style="font-size:0.88rem;" id="qe-amount-label">จำนวนเงิน (บาท) <span class="text-danger">*</span></label>
+                        <input type="number" id="qe-amount" class="form-control qe-input-lg" min="0" step="0.01" placeholder="0.00" oninput="recomputeQuickEntryTotal()">
+                        <div class="alert alert-warning mt-2 mb-0 d-none" id="qe-withdraw-hint" style="font-size:0.85rem;">
+                            <i class="fas fa-info-circle me-1"></i> การ "ถอน" คือกรณีที่สมาชิกไปรับเงินคืนโดยตรงกับเจ้าของโครงการแล้ว เจ้าหน้าที่จึงมาบันทึกยอดถอนไว้เป็นหลักฐานภายหลัง (ไม่กระทบยอดคงเหลือซ้ำ)
+                        </div>
+                        <div class="alert alert-info mt-2 mb-0 d-none" id="qe-cash-hint" style="font-size:0.85rem;">
+                            <i class="fas fa-info-circle me-1"></i> "รับเงินสดทันที" คือกรณีจ่ายเงินสดให้สมาชิกทันทีหน้าเคาน์เตอร์ — เป็นแค่บันทึกประวัติ ไม่กระทบยอดคงเหลือของสมาชิก
+                        </div>
+                    </div>
+
+                    <div class="mt-2">
+                        <label class="form-label fw-bold" style="font-size:0.88rem;">หมายเหตุ</label>
+                        <input type="text" id="qe-note" class="form-control" placeholder="หมายเหตุ (ไม่บังคับ)">
+                    </div>
+
+                    <div class="qe-total-box mt-3">
+                        <span>ยอดรวมรายการ</span>
+                        <span class="qe-total-amount" id="qe-total-amount">0.00 บาท</span>
+                    </div>
+
+                    <button class="btn btn-primary qe-submit-btn mt-3" onclick="openQuickEntryConfirm()">
+                        <i class="fas fa-check-circle me-1"></i> ตรวจสอบและยืนยันรายการ
+                    </button>
+                </div>
+
+                <hr class="my-4">
+
+                <h6 style="color:#0f2c59;font-weight:700;">ประวัติรายการฝาก-ถอนล่าสุด</h6>
+                <div class="content-card mb-3">
+                    <input type="text" id="vol-ledger-search" class="form-control" placeholder="🔍 พิมพ์ชื่อ หรือเลขบัตรประชาชน..." oninput="filterVolunteerLedgerTable()" style="border-radius:10px;">
+                </div>
+
+                <div class="table-wrapper table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>รหัสรายการ</th>
+                                <th>วันที่ทำรายการ</th>
+                                <th>ชื่อ-นามสกุล</th>
+                                <th>เลขบัตรประชาชน</th>
+                                <th>ประเภท</th>
+                                <th class="text-end">จำนวนเงิน</th>
+                                <th>รหัสรอบ</th>
+                                <th>ผู้บันทึก</th>
+                                <th>หมายเหตุ</th>
+                                <th>จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vol-ledger-tbody">
+                            <tr><td colspan="10" class="text-center py-4">กำลังโหลดข้อมูล...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="section-volunteer-rounds" class="page-section">
+                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                    <div>
+                        <h5 style="color:#0f2c59;font-weight:700;margin:0;">รอบขาย / สรุปกำไร</h5>
+                        <p class="text-muted mb-0" style="font-size:0.88rem;">ยอดจ่ายให้สมาชิก คำนวณอัตโนมัติจากผลรวมรายการฝาก + รับเงินสดทันที ที่ผูกกับรอบนี้ | กำไร = ยอดรับจากร้าน − ยอดจ่ายให้สมาชิก</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary" style="border-radius:10px;" onclick="loadVolunteerRounds()">
+                            <i class="fas fa-sync-alt me-1"></i> รีเฟรชข้อมูล
+                        </button>
+                        <button class="btn btn-success" style="border-radius:10px;" onclick="showVolRoundForm(null)">
+                            <i class="fas fa-plus me-1"></i> เพิ่มรอบใหม่
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ฟอร์มเพิ่ม/แก้ไขรอบขาย -->
+                <div id="vol-round-form-wrap" class="content-card p-4 mb-3 d-none" style="border-radius:12px; border:2px solid #059669;">
+                    <h6 style="color:#059669; font-weight:700;" id="vol-round-form-title"><i class="fas fa-plus-circle me-2"></i>เพิ่มรอบขายใหม่</h6>
+                    <input type="hidden" id="vrf-roundid">
+                    <div class="row g-2 mt-1">
+                        <div class="col-12 col-md-3">
+                            <label class="form-label fw-bold" style="font-size:0.88rem;">วันที่ทำรอบ <span class="text-danger">*</span></label>
+                            <input type="text" id="vrf-date" class="form-control" placeholder="เช่น 10/07/2569">
+                        </div>
+                        <div class="col-12 col-md-5">
+                            <label class="form-label fw-bold" style="font-size:0.88rem;">ชื่อร้าน/ผู้รับซื้อ <span class="text-danger">*</span></label>
+                            <input type="text" id="vrf-vendor" class="form-control" placeholder="เช่น ร้านวงค์วานิช">
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label fw-bold" style="font-size:0.88rem;">ยอดขายให้ร้าน (บาท) <span class="text-danger">*</span></label>
+                            <input type="number" id="vrf-saleamount" class="form-control" min="0" step="0.01" placeholder="0.00">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label fw-bold" style="font-size:0.88rem;">หมายเหตุ</label>
+                            <input type="text" id="vrf-note" class="form-control" placeholder="หมายเหตุ (ไม่บังคับ)">
+                        </div>
+                        <div class="col-12 d-flex gap-2 mt-2">
+                            <button class="btn btn-primary" onclick="submitVolRoundForm()" style="border-radius:8px;">
+                                <i class="fas fa-save me-1"></i> บันทึก
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="hideVolRoundForm()" style="border-radius:8px;">ยกเลิก</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-wrapper table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>รหัสรอบ</th>
+                                <th>วันที่ทำรอบ</th>
+                                <th>ร้าน/ผู้รับซื้อ</th>
+                                <th class="text-end">ยอดจ่ายให้สมาชิก</th>
+                                <th class="text-end">ยอดรับจากร้าน</th>
+                                <th class="text-end">กำไร</th>
+                                <th>ผู้บันทึก</th>
+                                <th>จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vol-rounds-tbody">
+                            <tr><td colspan="8" class="text-center py-4">กำลังโหลดข้อมูล...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <!-- ===== SECTION: SETTINGS ===== -->
             <div id="section-settings-banner" class="page-section">
                 <h5 style="color:#0f2c59;font-weight:700;" class="mb-3">จัดการประกาศ (Banner)</h5>
@@ -810,14 +1127,15 @@
                         <span class="dev-badge">แก้ใน Sheets</span>
                     </div>
                     <div class="setting-row">
-                        <div><div class="setting-label">Role / สิทธิ์</div><div class="setting-desc">คอลัมน์ G → <code>superadmin</code> / <code>pet</code> / <code>license</code></div></div>
+                        <div><div class="setting-label">Role / สิทธิ์</div><div class="setting-desc">คอลัมน์ G → <code>superadmin</code> / <code>pet</code> / <code>license</code> / <code>volunteer</code></div></div>
                         <span class="dev-badge">แก้ใน Sheets</span>
                     </div>
                     <div class="mt-3 p-3" style="background:#f0fdf4; border-radius:10px; border:1px solid #bbf7d0; font-size:0.88rem;">
                         <b>สิทธิ์การเข้าถึง:</b><br>
                         👑 <code>superadmin</code> → เข้าได้ทุกหน้า + ดู Activity Log<br>
                         🐾 <code>pet</code> → เข้าได้เฉพาะหน้าโครงการทำหมัน<br>
-                        📄 <code>license</code> → เข้าได้เฉพาะหน้าใบอนุญาต
+                        📄 <code>license</code> → เข้าได้เฉพาะหน้าใบอนุญาต<br>
+                        ♻️ <code>volunteer</code> → เข้าได้เฉพาะหน้าอาสาสมัคร อถล.
                     </div>
                 </div>
             </div>
@@ -988,9 +1306,9 @@
                 document.getElementById("display-username").innerText = currentUser;
                 document.getElementById("display-role").innerText = getRoleLabel(currentRole);
                 applyRolePermissions();
-                var startSection = (currentRole === 'license') ? 'license' : 'pet';
+                var startSection = (currentRole === 'license') ? 'license' : (currentRole === 'volunteer') ? 'volunteer' : 'pet';
                 switchSection(startSection);
-                if (currentRole !== 'license') loadData();
+                if (currentRole !== 'license' && currentRole !== 'volunteer') loadData();
                 resetSessionTimer(); // เริ่มนับเวลา session
             } else {
                 err.innerText = response.message;
@@ -1010,21 +1328,30 @@
         if (role === 'superadmin') return '👑 Super Admin';
         if (role === 'pet') return '🐾 Admin ทำหมัน';
         if (role === 'license') return '📄 Admin ใบอนุญาต';
+        if (role === 'volunteer') return '♻️ Admin อถล.';
         return role;
     }
 
     function applyRolePermissions() {
         // ซ่อน/แสดงแท็บตาม role
-        var tabPet      = document.getElementById('tab-pet');
-        var tabLicense  = document.getElementById('tab-license');
-        var tabSettings = document.getElementById('tab-settings');
+        var tabPet       = document.getElementById('tab-pet');
+        var tabLicense   = document.getElementById('tab-license');
+        var tabVolunteer = document.getElementById('tab-volunteer');
+        var tabSettings  = document.getElementById('tab-settings');
         if (currentRole === 'pet') {
             // เห็นแค่ทำหมัน
-            if (tabLicense)  tabLicense.style.display  = 'none';
-            if (tabSettings) tabSettings.style.display = 'none';
+            if (tabLicense)   tabLicense.style.display   = 'none';
+            if (tabVolunteer) tabVolunteer.style.display = 'none';
+            if (tabSettings)  tabSettings.style.display  = 'none';
         } else if (currentRole === 'license') {
             // เห็นแค่ใบอนุญาต
+            if (tabPet)       tabPet.style.display       = 'none';
+            if (tabVolunteer) tabVolunteer.style.display = 'none';
+            if (tabSettings)  tabSettings.style.display  = 'none';
+        } else if (currentRole === 'volunteer') {
+            // เห็นแค่ อถล.
             if (tabPet)      tabPet.style.display      = 'none';
+            if (tabLicense)  tabLicense.style.display  = 'none';
             if (tabSettings) tabSettings.style.display = 'none';
         }
         // superadmin เห็นทุกอย่าง + แท็บ Log
@@ -1058,7 +1385,7 @@
             if (btn) { btn.innerHTML = '<i class="fas fa-sign-in-alt me-2"></i>เข้าสู่ระบบหลังบ้าน'; btn.disabled = false; }
             var err = document.getElementById("login-error");
             if (err) err.classList.add("d-none");
-            ['tab-pet','tab-license','tab-settings','tab-log'].forEach(function(id) {
+            ['tab-pet','tab-license','tab-volunteer','tab-settings','tab-log'].forEach(function(id) {
                 var el = document.getElementById(id);
                 if (el) el.style.display = '';
             });
@@ -1078,6 +1405,11 @@
         if (firstLink) firstLink.click();
         if (section === 'license') loadLicenseData();
         if (section === 'log') loadActivityLog();
+        if (section === 'volunteer') {
+            loadVolunteerMembers();
+            loadVolunteerRounds();
+            loadVolunteerLedger();
+        }
     }
 
     // ===== PAGINATION =====
@@ -2223,6 +2555,596 @@
             loadData();
         });
     }
+
+    // ===== อาสาสมัคร อถล. (VOLUNTEER / WASTE BANK) =====
+    var globalVolunteerMembers = [];
+    var globalVolunteerLedger  = [];
+    var globalVolunteerRounds  = [];
+
+    // ----- สมาชิก + ยอดคงเหลือ -----
+    // รูปแบบข้อมูลจาก getVolunteerMembers() (ไม่มี "รหัสสมาชิก" แล้ว):
+    // d[0]=วันที่สมัคร, d[1]=คำนำหน้า, d[2]=ชื่อ, d[3]=นามสกุล, d[4]=เลขบัตรประชาชน,
+    // d[5]=เบอร์โทร, d[6]=ที่อยู่, d[7]=สถานะ, d[8]=หมายเหตุ, d[9]=ยอดคงเหลือ
+    function loadVolunteerMembers() {
+        document.getElementById('vol-members-tbody').innerHTML = '<tr><td colspan="6" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>';
+        callGAS("getVolunteerMembers", null, function(data) {
+            if (!Array.isArray(data)) {
+                var errMsg = (data && data.error) ? data.error : 'ไม่สามารถดึงข้อมูลสมาชิกอาสาสมัคร อถล. ได้';
+                document.getElementById('vol-members-tbody').innerHTML = '<tr><td colspan="6" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>' + esc(errMsg) + '</td></tr>';
+                return;
+            }
+            globalVolunteerMembers = data;
+            renderVolunteerMembersTable(data);
+            updateVolunteerMemberStats(data);
+        }, function() {
+            document.getElementById('vol-members-tbody').innerHTML = '<tr><td colspan="6" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>เชื่อมต่อระบบไม่ได้ กรุณาลองใหม่</td></tr>';
+        });
+    }
+
+    function updateVolunteerMemberStats(data) {
+        var totalBalance = 0;
+        data.forEach(function(d) { totalBalance += parseFloat(d[9]) || 0; });
+        document.getElementById('db-vol-total-members').innerText = data.length;
+        document.getElementById('db-vol-total-balance').innerText = totalBalance.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function renderVolunteerMembersTable(data) {
+        var tbody = document.getElementById('vol-members-tbody');
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">ยังไม่มีสมาชิก</td></tr>';
+            return;
+        }
+        var html = '';
+        for (var i = 0; i < data.length; i++) {
+            var d = data[i];
+            var fullName = esc(((d[1]||'') + (d[2]||'') + ' ' + (d[3]||'')).trim());
+            var idCard   = esc(d[4] || '-');
+            var phone    = esc(d[5] || '-');
+            var status   = d[7] || 'ใช้งาน';
+            var balance  = parseFloat(d[9]) || 0;
+            var badgeClass = status === 'ใช้งาน' ? 'bg-success' : 'bg-secondary';
+            html += '<tr>';
+            html += '<td>' + fullName + '</td>';
+            html += '<td>' + idCard + '</td>';
+            html += '<td>' + phone + '</td>';
+            html += '<td><span class="badge ' + badgeClass + '">' + esc(status) + '</span></td>';
+            html += '<td class="text-end fw-bold" style="color:#059669;">' + balance.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</td>';
+            html += '<td><div class="action-btns">';
+            html += '<button class="btn btn-outline-primary btn-sm" onclick="showVolLedgerFormFor(globalVolunteerMembers[' + i + '])" title="บันทึกฝาก/ถอนให้สมาชิกนี้"><i class="fas fa-exchange-alt"></i></button>';
+            html += '</div></td></tr>';
+        }
+        tbody.innerHTML = html;
+    }
+
+    function filterVolunteerMembersTable() {
+        var kw = document.getElementById('vol-member-search').value.toLowerCase().trim();
+        if (!kw) { renderVolunteerMembersTable(globalVolunteerMembers); return; }
+        var filtered = globalVolunteerMembers.filter(function(d) {
+            return d.some(function(c) { return c !== null && c !== undefined && c.toString().toLowerCase().includes(kw); });
+        });
+        renderVolunteerMembersTable(filtered);
+    }
+
+    function showVolMemberForm() {
+        document.getElementById('vol-member-form-wrap').classList.remove('d-none');
+        ['vmf-firstname','vmf-lastname','vmf-idcard','vmf-phone','vmf-address'].forEach(function(id) { document.getElementById(id).value = ''; });
+        document.getElementById('vmf-prefix').value = '';
+        document.getElementById('vol-member-form-wrap').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function hideVolMemberForm() {
+        document.getElementById('vol-member-form-wrap').classList.add('d-none');
+    }
+
+    function submitVolMemberForm() {
+        var form = {
+            prefix:    document.getElementById('vmf-prefix').value,
+            firstName: document.getElementById('vmf-firstname').value.trim(),
+            lastName:  document.getElementById('vmf-lastname').value.trim(),
+            idCard:    document.getElementById('vmf-idcard').value.trim(),
+            phone:     document.getElementById('vmf-phone').value.trim(),
+            address:   document.getElementById('vmf-address').value.trim()
+        };
+        if (!form.prefix || !form.firstName || !form.lastName || !form.idCard || !form.phone) {
+            Swal.fire({ icon: 'warning', title: 'กรุณากรอกข้อมูลให้ครบ', text: 'คำนำหน้า / ชื่อ / นามสกุล / เลขบัตรประชาชน / เบอร์โทร เป็นข้อมูลจำเป็น' });
+            return;
+        }
+        if (form.idCard.length !== 13) {
+            Swal.fire({ icon: 'warning', title: 'เลขบัตรประชาชนไม่ถูกต้อง', text: 'กรุณากรอกเลขบัตรประชาชนให้ครบ 13 หลัก' });
+            return;
+        }
+        Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+        var saveTimedOut = false;
+        var saveTimeoutId = setTimeout(function() {
+            saveTimedOut = true;
+            Swal.fire({
+                icon: 'warning', title: 'การเชื่อมต่อขัดข้อง',
+                html: 'ไม่ได้รับการตอบกลับจากเซิร์ฟเวอร์ภายในเวลาที่กำหนด<br><b>ข้อมูลอาจถูกบันทึกสำเร็จแล้วฝั่งเซิร์ฟเวอร์</b> กรุณาปิดหน้าต่างนี้แล้วรีเฟรชข้อมูลเพื่อตรวจสอบก่อนบันทึกซ้ำ',
+                confirmButtonText: 'ตกลง'
+            });
+            hideVolMemberForm();
+            loadVolunteerMembers();
+        }, 15000);
+        callGAS("registerVolunteerMember", form, function(res) {
+            if (saveTimedOut) return;
+            clearTimeout(saveTimeoutId);
+            if (res.success) {
+                Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ!', timer: 1500, showConfirmButton: false });
+                hideVolMemberForm();
+                loadVolunteerMembers();
+            } else {
+                Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: res.message });
+            }
+        }, function(err) {
+            if (saveTimedOut) return;
+            clearTimeout(saveTimeoutId);
+            console.error('submitVolMemberForm fetch error:', err);
+            Swal.fire({
+                icon: 'warning', title: 'การเชื่อมต่อขัดข้อง',
+                html: 'เกิดข้อผิดพลาดในการเชื่อมต่อ<br><b>ข้อมูลอาจถูกบันทึกสำเร็จแล้วฝั่งเซิร์ฟเวอร์</b> กรุณาปิดหน้าต่างนี้แล้วรีเฟรชข้อมูลเพื่อตรวจสอบก่อนบันทึกซ้ำ',
+                confirmButtonText: 'ตกลง'
+            });
+            hideVolMemberForm();
+            loadVolunteerMembers();
+        });
+    }
+
+    // ----- รายการฝาก-ถอน -----
+    // ----- รายการฝาก-ถอน (ประวัติ) -----
+    function loadVolunteerLedger() {
+        document.getElementById('vol-ledger-tbody').innerHTML = '<tr><td colspan="10" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>';
+        callGAS("getVolunteerLedger", null, function(data) {
+            if (!Array.isArray(data)) {
+                var errMsg = (data && data.error) ? data.error : 'ไม่สามารถดึงข้อมูลรายการฝาก-ถอนได้';
+                document.getElementById('vol-ledger-tbody').innerHTML = '<tr><td colspan="10" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>' + esc(errMsg) + '</td></tr>';
+                return;
+            }
+            globalVolunteerLedger = data;
+            renderVolunteerLedgerTable(data);
+        }, function() {
+            document.getElementById('vol-ledger-tbody').innerHTML = '<tr><td colspan="10" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>เชื่อมต่อระบบไม่ได้ กรุณาลองใหม่</td></tr>';
+        });
+    }
+
+    function renderVolunteerLedgerTable(data) {
+        var tbody = document.getElementById('vol-ledger-tbody');
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-muted">ยังไม่มีรายการฝาก-ถอน</td></tr>';
+            return;
+        }
+        var typeColorMap = { 'ฝาก': 'success', 'ถอน': 'warning', 'รับเงินสดทันที': 'primary' };
+        var typeSignMap  = { 'ฝาก': '+', 'ถอน': '-', 'รับเงินสดทันที': '' };
+        var html = '';
+        for (var i = 0; i < data.length; i++) {
+            var d = data[i];
+            var txId     = d[0] || '-';
+            var date     = esc(d[1] || '-');
+            var idCard   = esc(d[2] || '-');
+            var name     = esc(d[3] || '-');
+            var type     = d[4] || '';
+            var amount   = parseFloat(d[5]) || 0;
+            var roundId  = esc(d[6] || '-');
+            var recorder = esc(d[7] || '-');
+            var note     = esc(d[8] || '-');
+            var typeColor = typeColorMap[type] || 'secondary';
+            var amountColor = (type === 'ฝาก' || type === 'รับเงินสดทันที') ? '#059669' : '#dc2626';
+            var amountSign = typeSignMap[type] || '';
+            html += '<tr>';
+            html += '<td style="font-size:0.8rem;">' + esc(txId) + '</td>';
+            html += '<td style="white-space:nowrap;">' + date + '</td>';
+            html += '<td>' + name + '</td>';
+            html += '<td>' + idCard + '</td>';
+            html += '<td><span class="badge bg-' + typeColor + '">' + esc(type) + '</span></td>';
+            html += '<td class="text-end fw-bold" style="color:' + amountColor + ';">' + amountSign + amount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</td>';
+            html += '<td>' + roundId + '</td>';
+            html += '<td>' + recorder + '</td>';
+            html += '<td style="font-size:0.85rem;">' + note + '</td>';
+            html += '<td><div class="action-btns">';
+            html += '<button class="btn btn-outline-danger btn-sm" onclick="confirmDeleteVolLedger(\'' + esc(txId) + '\')"><i class="fas fa-trash"></i></button>';
+            html += '</div></td></tr>';
+        }
+        tbody.innerHTML = html;
+    }
+
+    function filterVolunteerLedgerTable() {
+        var kw = document.getElementById('vol-ledger-search').value.toLowerCase().trim();
+        if (!kw) { renderVolunteerLedgerTable(globalVolunteerLedger); return; }
+        var filtered = globalVolunteerLedger.filter(function(d) {
+            return d.some(function(c) {
+                if (c === null || c === undefined) return false;
+                if (Array.isArray(c)) return false; // ข้าม items[] ในการค้นหาข้อความ
+                return c.toString().toLowerCase().includes(kw);
+            });
+        });
+        renderVolunteerLedgerTable(filtered);
+    }
+
+    function populateQuickEntryRoundSelect() {
+        var sel = document.getElementById('qe-round');
+        if (!sel) return;
+        var current = sel.value;
+        var html = '<option value="">-- ไม่ระบุรอบ --</option>';
+        globalVolunteerRounds.forEach(function(r) {
+            html += '<option value="' + esc(r[0]) + '">' + esc(r[0]) + ' (' + esc(r[1]||'-') + ')</option>';
+        });
+        sel.innerHTML = html;
+        sel.value = current;
+    }
+
+    function showVolLedgerFormFor(memberRow) {
+        switchSidebar('volunteer-ledger', document.querySelector('#sidebar-volunteer a[onclick*="volunteer-ledger"]'));
+        resetQuickEntry();
+        document.getElementById('qe-idcard').value = memberRow[4] || '';
+        searchQuickEntryMember();
+        document.getElementById('qe-idcard').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function confirmDeleteVolLedger(transactionId) {
+        Swal.fire({ title: 'ยืนยันการลบรายการนี้?', text: 'ข้อมูลจะถูกลบออกจาก Sheets ทันที', icon: 'warning',
+            showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonText: 'ยกเลิก', confirmButtonText: 'ลบเลย'
+        }).then(function(result) {
+            if (!result.isConfirmed) return;
+            Swal.fire({ title: 'กำลังลบ...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+            var delTimedOut = false;
+            var delTimeoutId = setTimeout(function() {
+                delTimedOut = true;
+                Swal.fire({
+                    icon: 'warning', title: 'การเชื่อมต่อขัดข้อง',
+                    html: 'ไม่ได้รับการตอบกลับจากเซิร์ฟเวอร์ภายในเวลาที่กำหนด<br><b>ข้อมูลอาจถูกลบสำเร็จแล้วฝั่งเซิร์ฟเวอร์</b> กรุณารีเฟรชข้อมูลเพื่อตรวจสอบ',
+                    confirmButtonText: 'ตกลง'
+                });
+                loadVolunteerLedger();
+                loadVolunteerMembers();
+            }, 15000);
+            callGAS("deleteVolunteerTransaction", { transactionId: transactionId, username: currentUser }, function(res) {
+                if (delTimedOut) return;
+                clearTimeout(delTimeoutId);
+                if (res.success) {
+                    Swal.fire({ icon: 'success', title: 'ลบสำเร็จ!', timer: 1200, showConfirmButton: false });
+                    loadVolunteerLedger();
+                    loadVolunteerMembers();
+                } else {
+                    Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: res.message });
+                }
+            }, function(err) {
+                if (delTimedOut) return;
+                clearTimeout(delTimeoutId);
+                console.error('confirmDeleteVolLedger fetch error:', err);
+                Swal.fire({
+                    icon: 'warning', title: 'การเชื่อมต่อขัดข้อง',
+                    html: 'เกิดข้อผิดพลาดในการเชื่อมต่อ<br><b>ข้อมูลอาจถูกลบสำเร็จแล้วฝั่งเซิร์ฟเวอร์</b> กรุณารีเฟรชข้อมูลเพื่อตรวจสอบ',
+                    confirmButtonText: 'ตกลง'
+                });
+                loadVolunteerLedger();
+                loadVolunteerMembers();
+            });
+        });
+    }
+
+    // ============================================================
+    // ----- หน้าเคาน์เตอร์ (Quick Entry) -----
+    // ============================================================
+    var qeMember   = null;   // แถวสมาชิกที่ค้นพบ (globalVolunteerMembers row)
+    var qeType     = 'ฝาก';
+
+    function searchQuickEntryMember() {
+        var idCard = document.getElementById('qe-idcard').value.trim();
+        var box = document.getElementById('qe-member-box');
+        if (!idCard || idCard.length !== 13) {
+            Swal.fire({ icon: 'warning', title: 'กรุณากรอกเลขบัตรประชาชนให้ครบ 13 หลัก' });
+            return;
+        }
+        var found = null;
+        for (var i = 0; i < globalVolunteerMembers.length; i++) {
+            if ((globalVolunteerMembers[i][4] || '').toString().trim() === idCard) { found = globalVolunteerMembers[i]; break; }
+        }
+        box.classList.remove('d-none');
+        if (!found) {
+            qeMember = null;
+            box.classList.remove('found');
+            box.classList.add('notfound');
+            document.getElementById('qe-member-name').textContent = 'ไม่พบสมาชิก';
+            document.getElementById('qe-member-idcard').textContent = idCard;
+            document.getElementById('qe-member-balance').textContent = '0.00';
+            document.getElementById('qe-zone-type').classList.add('d-none');
+            document.getElementById('qe-zone-form').classList.add('d-none');
+            return;
+        }
+        qeMember = found;
+        box.classList.remove('notfound');
+        box.classList.add('found');
+        var fullName = ((found[1]||'') + (found[2]||'') + ' ' + (found[3]||'')).trim();
+        document.getElementById('qe-member-name').textContent = fullName;
+        document.getElementById('qe-member-idcard').textContent = idCard;
+        document.getElementById('qe-member-balance').textContent = (parseFloat(found[9])||0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        document.getElementById('qe-zone-type').classList.remove('d-none');
+        document.getElementById('qe-zone-form').classList.remove('d-none');
+        selectQuickEntryType(qeType || 'ฝาก');
+    }
+
+    function resetQuickEntry() {
+        qeMember = null;
+        qeType = 'ฝาก';
+        document.getElementById('qe-idcard').value = '';
+        document.getElementById('qe-member-box').classList.add('d-none');
+        document.getElementById('qe-zone-type').classList.add('d-none');
+        document.getElementById('qe-zone-form').classList.add('d-none');
+        document.getElementById('qe-amount').value = '';
+        document.getElementById('qe-note').value = '';
+    }
+
+    function selectQuickEntryType(type) {
+        qeType = type;
+        ['ฝาก','ถอน','รับเงินสดทันที'].forEach(function(t) {
+            var btn = document.getElementById('qe-typebtn-' + t);
+            if (btn) btn.classList.toggle('active', t === type);
+        });
+        var roundWrap        = document.getElementById('qe-round-wrap');
+        var withdrawHint      = document.getElementById('qe-withdraw-hint');
+        var cashHint           = document.getElementById('qe-cash-hint');
+        var amountLabel        = document.getElementById('qe-amount-label');
+        var titleEl             = document.getElementById('qe-form-title');
+
+        roundWrap.classList.toggle('d-none', type === 'ถอน');
+        withdrawHint.classList.toggle('d-none', type !== 'ถอน');
+        cashHint.classList.toggle('d-none', type !== 'รับเงินสดทันที');
+
+        if (type === 'ฝาก') {
+            amountLabel.innerHTML = 'จำนวนเงินที่ฝาก (บาท) <span class="text-danger">*</span>';
+            titleEl.textContent = '③ รายละเอียดรายการฝากเงิน';
+            populateQuickEntryRoundSelect();
+        } else if (type === 'ถอน') {
+            amountLabel.innerHTML = 'จำนวนเงินที่ถอน (บาท) <span class="text-danger">*</span>';
+            titleEl.textContent = '③ รายละเอียดรายการถอนเงิน';
+        } else if (type === 'รับเงินสดทันที') {
+            amountLabel.innerHTML = 'จำนวนเงินที่จ่ายสด (บาท) <span class="text-danger">*</span>';
+            titleEl.textContent = '③ รายละเอียดรายการรับเงินสดทันที';
+            populateQuickEntryRoundSelect();
+        }
+        recomputeQuickEntryTotal();
+    }
+
+    function recomputeQuickEntryTotal() {
+        var total = parseFloat(document.getElementById('qe-amount').value) || 0;
+        document.getElementById('qe-total-amount').textContent = total.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' บาท';
+        return total;
+    }
+
+    function openQuickEntryConfirm() {
+        if (!qeMember) {
+            Swal.fire({ icon: 'warning', title: 'กรุณาค้นหาและเลือกสมาชิกก่อน' });
+            return;
+        }
+        var total = recomputeQuickEntryTotal();
+        if (!total || total <= 0) {
+            Swal.fire({ icon: 'warning', title: 'กรุณากรอกจำนวนเงินให้ถูกต้อง' });
+            return;
+        }
+        var balance = parseFloat(qeMember[9]) || 0;
+        var fullName = ((qeMember[1]||'') + (qeMember[2]||'') + ' ' + (qeMember[3]||'')).trim();
+        var resultingBalance = balance;
+        if (qeType === 'ฝาก') resultingBalance = balance + total;
+        else if (qeType === 'ถอน') resultingBalance = balance - total;
+        // รับเงินสดทันที ไม่กระทบยอดคงเหลือ
+
+        var payload = { idCard: qeMember[4], type: qeType, amount: total, note: document.getElementById('qe-note').value.trim(), username: currentUser };
+        if (qeType === 'ฝาก' || qeType === 'รับเงินสดทันที') {
+            var roundId = document.getElementById('qe-round').value;
+            if (roundId) payload.roundId = roundId;
+        }
+
+        var amountLabel = (qeType === 'ฝาก' ? '+' : (qeType === 'รับเงินสดทันที' ? '' : '-')) +
+            total.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' บาท';
+
+        Swal.fire({
+            title: 'ยืนยันรายการ',
+            html: '<div style="text-align:left;font-size:1rem;">' +
+                  '<div><b>สมาชิก:</b> ' + esc(fullName) + '</div>' +
+                  '<div><b>ประเภทรายการ:</b> ' + esc(qeType) + '</div>' +
+                  '<div><b>ยอดรายการ:</b> ' + amountLabel + '</div>' +
+                  '<div><b>ยอดคงเหลือหลังทำรายการ:</b> ' + resultingBalance.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' บาท</div>' +
+                  '</div>',
+            icon: 'question', showCancelButton: true, confirmButtonColor: '#0f2c59',
+            confirmButtonText: '<i class="fas fa-check me-1"></i> ยืนยันบันทึกรายการ', cancelButtonText: 'ยกเลิก'
+        }).then(function(result) {
+            if (result.isConfirmed) submitQuickEntry(payload);
+        });
+    }
+
+    function submitQuickEntry(payload) {
+        Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+        var saveTimedOut = false;
+        var saveTimeoutId = setTimeout(function() {
+            saveTimedOut = true;
+            Swal.fire({
+                icon: 'warning', title: 'การเชื่อมต่อขัดข้อง',
+                html: 'ไม่ได้รับการตอบกลับจากเซิร์ฟเวอร์ภายในเวลาที่กำหนด<br><b>ข้อมูลอาจถูกบันทึกสำเร็จแล้วฝั่งเซิร์ฟเวอร์</b> กรุณารีเฟรชข้อมูลเพื่อตรวจสอบก่อนบันทึกซ้ำ',
+                confirmButtonText: 'ตกลง'
+            });
+            loadVolunteerLedger(); loadVolunteerMembers();
+        }, 15000);
+        callGAS("addVolunteerTransaction", payload, function(res) {
+            if (saveTimedOut) return;
+            clearTimeout(saveTimeoutId);
+            if (res.success) {
+                Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ!', timer: 1500, showConfirmButton: false });
+                resetQuickEntry();
+                loadVolunteerLedger(); loadVolunteerMembers();
+            } else {
+                Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: res.message });
+            }
+        }, function(err) {
+            if (saveTimedOut) return;
+            clearTimeout(saveTimeoutId);
+            console.error('submitQuickEntry fetch error:', err);
+            Swal.fire({
+                icon: 'warning', title: 'การเชื่อมต่อขัดข้อง',
+                html: 'เกิดข้อผิดพลาดในการเชื่อมต่อ<br><b>ข้อมูลอาจถูกบันทึกสำเร็จแล้วฝั่งเซิร์ฟเวอร์</b> กรุณารีเฟรชข้อมูลเพื่อตรวจสอบก่อนบันทึกซ้ำ',
+                confirmButtonText: 'ตกลง'
+            });
+            loadVolunteerLedger(); loadVolunteerMembers();
+        });
+    }
+
+    // ----- รอบขาย / สรุปกำไร -----
+    function loadVolunteerRounds() {
+        document.getElementById('vol-rounds-tbody').innerHTML = '<tr><td colspan="8" class="text-center py-4"><div class="spinner-border text-primary"></div></td></tr>';
+        callGAS("getVolunteerRounds", null, function(data) {
+            if (!Array.isArray(data)) {
+                var errMsg = (data && data.error) ? data.error : 'ไม่สามารถดึงข้อมูลรอบขายได้';
+                document.getElementById('vol-rounds-tbody').innerHTML = '<tr><td colspan="8" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>' + esc(errMsg) + '</td></tr>';
+                return;
+            }
+            globalVolunteerRounds = data;
+            renderVolunteerRoundsTable(data);
+            populateQuickEntryRoundSelect();
+        }, function() {
+            document.getElementById('vol-rounds-tbody').innerHTML = '<tr><td colspan="8" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle me-2"></i>เชื่อมต่อระบบไม่ได้ กรุณาลองใหม่</td></tr>';
+        });
+    }
+
+    function renderVolunteerRoundsTable(data) {
+        var tbody = document.getElementById('vol-rounds-tbody');
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">ยังไม่มีรอบขาย</td></tr>';
+            return;
+        }
+        var html = '';
+        for (var i = 0; i < data.length; i++) {
+            var d = data[i];
+            var roundId   = d[0] || '-';
+            var date      = esc(d[1] || '-');
+            var vendor    = esc(d[2] || '-');
+            var saleAmount= parseFloat(d[3]) || 0;
+            var intake    = parseFloat(d[4]) || 0;
+            var profit    = parseFloat(d[5]) || 0;
+            var recorder  = esc(d[6] || '-');
+            var profitColor = profit >= 0 ? '#059669' : '#dc2626';
+            html += '<tr>';
+            html += '<td>' + esc(roundId) + '</td>';
+            html += '<td>' + date + '</td>';
+            html += '<td>' + vendor + '</td>';
+            html += '<td class="text-end">' + intake.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</td>';
+            html += '<td class="text-end">' + saleAmount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</td>';
+            html += '<td class="text-end fw-bold" style="color:' + profitColor + ';">' + profit.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</td>';
+            html += '<td>' + recorder + '</td>';
+            html += '<td><div class="action-btns">';
+            html += '<button class="btn btn-outline-primary btn-sm" onclick="showVolRoundForm(globalVolunteerRounds[' + i + '])"><i class="fas fa-edit"></i></button>';
+            html += '<button class="btn btn-outline-danger btn-sm" onclick="confirmDeleteVolRound(\'' + esc(roundId) + '\')"><i class="fas fa-trash"></i></button>';
+            html += '</div></td></tr>';
+        }
+        tbody.innerHTML = html;
+    }
+
+    function showVolRoundForm(data) {
+        document.getElementById('vol-round-form-wrap').classList.remove('d-none');
+        if (data) {
+            document.getElementById('vol-round-form-title').innerHTML = '<i class="fas fa-edit me-2"></i>แก้ไขรอบขาย ' + esc(data[0]);
+            document.getElementById('vrf-roundid').value    = data[0] || '';
+            document.getElementById('vrf-date').value       = data[1] || '';
+            document.getElementById('vrf-vendor').value      = data[2] || '';
+            document.getElementById('vrf-saleamount').value  = data[3] || '';
+            document.getElementById('vrf-note').value        = data[7] || '';
+        } else {
+            document.getElementById('vol-round-form-title').innerHTML = '<i class="fas fa-plus-circle me-2"></i>เพิ่มรอบขายใหม่';
+            ['vrf-roundid','vrf-date','vrf-vendor','vrf-saleamount','vrf-note'].forEach(function(id) { document.getElementById(id).value = ''; });
+        }
+        document.getElementById('vol-round-form-wrap').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function hideVolRoundForm() {
+        document.getElementById('vol-round-form-wrap').classList.add('d-none');
+    }
+
+    function submitVolRoundForm() {
+        var roundId = document.getElementById('vrf-roundid').value;
+        var form = {
+            date:       document.getElementById('vrf-date').value.trim(),
+            vendor:     document.getElementById('vrf-vendor').value.trim(),
+            saleAmount: parseFloat(document.getElementById('vrf-saleamount').value) || 0,
+            note:       document.getElementById('vrf-note').value.trim(),
+            username:   currentUser
+        };
+        if (!form.date || !form.vendor) {
+            Swal.fire({ icon: 'warning', title: 'กรุณากรอกข้อมูลให้ครบ', text: 'วันที่ทำรอบ / ชื่อร้าน เป็นข้อมูลจำเป็น' });
+            return;
+        }
+        if (roundId) form.roundId = roundId;
+        Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+        var saveTimedOut = false;
+        var saveTimeoutId = setTimeout(function() {
+            saveTimedOut = true;
+            Swal.fire({
+                icon: 'warning', title: 'การเชื่อมต่อขัดข้อง',
+                html: 'ไม่ได้รับการตอบกลับจากเซิร์ฟเวอร์ภายในเวลาที่กำหนด<br><b>ข้อมูลอาจถูกบันทึกสำเร็จแล้วฝั่งเซิร์ฟเวอร์</b> กรุณาปิดหน้าต่างนี้แล้วรีเฟรชข้อมูลเพื่อตรวจสอบก่อนบันทึกซ้ำ',
+                confirmButtonText: 'ตกลง'
+            });
+            hideVolRoundForm();
+            loadVolunteerRounds();
+        }, 15000);
+        callGAS("saveVolunteerRound", form, function(res) {
+            if (saveTimedOut) return;
+            clearTimeout(saveTimeoutId);
+            if (res.success) {
+                Swal.fire({ icon: 'success', title: 'บันทึกสำเร็จ!', timer: 1500, showConfirmButton: false });
+                hideVolRoundForm();
+                loadVolunteerRounds();
+            } else {
+                Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: res.message });
+            }
+        }, function(err) {
+            if (saveTimedOut) return;
+            clearTimeout(saveTimeoutId);
+            console.error('submitVolRoundForm fetch error:', err);
+            Swal.fire({
+                icon: 'warning', title: 'การเชื่อมต่อขัดข้อง',
+                html: 'เกิดข้อผิดพลาดในการเชื่อมต่อ<br><b>ข้อมูลอาจถูกบันทึกสำเร็จแล้วฝั่งเซิร์ฟเวอร์</b> กรุณาปิดหน้าต่างนี้แล้วรีเฟรชข้อมูลเพื่อตรวจสอบก่อนบันทึกซ้ำ',
+                confirmButtonText: 'ตกลง'
+            });
+            hideVolRoundForm();
+            loadVolunteerRounds();
+        });
+    }
+
+    function confirmDeleteVolRound(roundId) {
+        Swal.fire({ title: 'ยืนยันการลบรอบขายนี้?', text: 'ข้อมูลจะถูกลบออกจาก Sheets ทันที', icon: 'warning',
+            showCancelButton: true, confirmButtonColor: '#dc2626', cancelButtonText: 'ยกเลิก', confirmButtonText: 'ลบเลย'
+        }).then(function(result) {
+            if (!result.isConfirmed) return;
+            Swal.fire({ title: 'กำลังลบ...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
+            var delTimedOut = false;
+            var delTimeoutId = setTimeout(function() {
+                delTimedOut = true;
+                Swal.fire({
+                    icon: 'warning', title: 'การเชื่อมต่อขัดข้อง',
+                    html: 'ไม่ได้รับการตอบกลับจากเซิร์ฟเวอร์ภายในเวลาที่กำหนด<br><b>ข้อมูลอาจถูกลบสำเร็จแล้วฝั่งเซิร์ฟเวอร์</b> กรุณารีเฟรชข้อมูลเพื่อตรวจสอบ',
+                    confirmButtonText: 'ตกลง'
+                });
+                loadVolunteerRounds();
+            }, 15000);
+            callGAS("deleteVolunteerRound", { roundId: roundId, username: currentUser }, function(res) {
+                if (delTimedOut) return;
+                clearTimeout(delTimeoutId);
+                if (res.success) {
+                    Swal.fire({ icon: 'success', title: 'ลบสำเร็จ!', timer: 1200, showConfirmButton: false });
+                    loadVolunteerRounds();
+                } else {
+                    Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: res.message });
+                }
+            }, function(err) {
+                if (delTimedOut) return;
+                clearTimeout(delTimeoutId);
+                console.error('confirmDeleteVolRound fetch error:', err);
+                Swal.fire({
+                    icon: 'warning', title: 'การเชื่อมต่อขัดข้อง',
+                    html: 'เกิดข้อผิดพลาดในการเชื่อมต่อ<br><b>ข้อมูลอาจถูกลบสำเร็จแล้วฝั่งเซิร์ฟเวอร์</b> กรุณารีเฟรชข้อมูลเพื่อตรวจสอบ',
+                    confirmButtonText: 'ตกลง'
+                });
+                loadVolunteerRounds();
+            });
+        });
+    }
+
 </script>
 </body>
 </html>
